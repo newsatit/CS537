@@ -1,13 +1,23 @@
 #include <stdio.h>
+#include <stdlib.h>
+#define BUFFER_SIZE 1000000
 int main(int argc, char *argv[]) {
-    int file_counter = 1;
-    while(file_counter <= argc) {
-        FILE *fp = fopen(argv[file_counter], "r");
+    for(int fi = 1; fi < argc; fi++){
+        
+        FILE *fp = fopen(argv[fi], "r");
+        char buffer[BUFFER_SIZE];
+        
         if(fp == NULL) {
             printf("my-cat: cannot open file\n");
             exit(1);
         }
-        file_counter++;
+
+        while(fgets(buffer, BUFFER_SIZE, fp) != NULL) {
+            printf("%s", buffer);
+        }
+        printf("\n");
+
+        fclose(fp);
     }
     return 0;
 }
