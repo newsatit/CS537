@@ -3,7 +3,6 @@
 #define BUFFER_SIZE 1000000
 int main(int argc, char *argv[]) {
     for(int fi = 1; fi < argc; fi++){
-        
         FILE *fp = fopen(argv[fi], "r");
         char buffer[BUFFER_SIZE];
         
