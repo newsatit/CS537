@@ -1,62 +1,97 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
-// TODO: size of commands(history)
-char *hist[1000];
-int hist_count;
-void printerr() {
-	char error_message[30] = "An error has occurred\n";
-	write(STDERR_FILENO, error_message, strlen(error_message));	
-} 
-void history() {
-	for(int i = 0; i < hist_count; i++) {
-		printf("%s\n", hist[i]);
-	}
-}
+#include <fcntl.h>
+#include "func.h"
 
-void add_history(char *command) {
-	hist[hist_count] = (char*)malloc(sizeof(char) * strlen(command));	
-	strcpy(hist[hist_count++], command);
-}
 int main(int argc, char* argv[]) {
-	FILE *fp;
+
+	FILE *fin;
 	
 	if (argc > 2) {
-		printerr();
-		exit(1);
+		error();
 	}
 	if (argc == 2) {
-		fp = fopen(argv[1], "r");
-		if (fp == NULL) {
-			printerr();
-			exit(1);
+		fin = fopen(argv[1], "r");
+		if (fin == NULL) {
+			error();
 		}	
 	} else {
-		fp = stdin;
+		fin = stdin;
 	}
 	char *command = NULL;
 	size_t len = 0;
+
+
+	str_copy(&paths[0], "/bin/");
+	paths_len = 1;
+
 	while (1) {
-		if (argc != 2)
-			printf("wish> ");
-		if (getline(&command, &len, fp) != -1) {
-			// TODO: deal with white space
-			// get ride of new line char	
-			strncpy(command, command, strlen(command) - 1);
-			command[strlen(command) - 1] = '\0';
+		if (argc != 2) {
+		    printf("wish> ");
+		}
+
+		if (getline(&command, &len, fin) != -1) {
+			// remove '\n' from command
+            command[strlen(command) - 1] = '\0';
 			// add command to history	
-			add_history(command);
-			printf("*%s*\n", command);
-			
-			if (!strcmp(command, "exit")) {
+			update_history(command);
+
+			// TODO: move w_argc to later
+			w_argc = split(command, w_argv, " ");
+			re_argc = split(command, re_argv, ">");
+			pi_argc = split(command, pi_argv, "|");
+
+            char *w_argv_0 = NULL;
+            // save original first wish argument
+			str_copy(&w_argv_0, w_argv[0]);
+			str_copy(&w_argv[0], paths[0]);
+			strcat(w_argv[0], w_argv_0);
+
+			if(pi_argc > 2 || re_argc > 2 || (pi_argc > 1 && re_argc > 1)) {
+				error();
+			}
+
+			int exec_rc = 0;
+
+			if (!access(w_argv[0], X_OK)) {
+				int rc = fork();
+				if (rc == 0) {
+					exec_rc = execv(w_argv[0], w_argv);
+				} else if (rc == -1) {
+					error();
+				} else {
+				    wait(NULL);
+					if(exec_rc == 0)
+						continue;
+				}
+			}
+
+			str_copy(&w_argv[0], w_argv_0);
+			if (!strcmp(w_argv[0], "exit")) {
+				printf("exit\n");
 				if (argc == 2) {
-					fclose(fp);
+					fclose(fin);
+				}
+				if(w_argc > 1) {
+					error();
 				}
 				exit(0);
-			} else if (!strcmp(command, "history")) {
+				// TODO: deal with non-integer args
+			} else if (!strcmp(w_argv[0], "history")) {
 				history();
-			} 
+			} else if (!strcmp(w_argv[0], "cd")) {
+				cd();
+			} else if (!strcmp(w_argv[0], "path")) {
+				path();
+			} else {
+				error();
+			}
+		} else {
+			exit(0);
 		}
 	}
 }

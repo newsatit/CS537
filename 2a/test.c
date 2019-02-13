@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
 		int exec_rc = execv("/bin/ps", my_argv);
 		printf("Done Calling exec %d\n", exec_rc);
 
-		sleep(10);
+		sleep(5);
 		printf("Done Sleeping\n");
 	} else {
 		printf("Parent process\n");
