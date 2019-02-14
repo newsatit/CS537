@@ -6,7 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 
-extern FILE *fin;
+extern FILE *fin, *fout;
 
 extern int fd[2];
 

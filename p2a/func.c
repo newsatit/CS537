@@ -2,8 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 
-FILE *fin;
+FILE *fin, *fout;
 
 // file descriptors
 int fd[2];
@@ -31,15 +32,13 @@ int paths_len;
  * @param b source string
  */
 void str_copy(char **a, char *b) {
-    if (*a != NULL) {
-            free(*a);
-    }
     *a = (char*)malloc(sizeof(b));
     strcpy(*a, b);
 }
 
 void error() {
     char error_message[30] = "An error has occurred\n";
+    fprintf(stderr, "%s\n", strerror(errno));
     write(STDERR_FILENO, error_message, strlen(error_message));
 }
 
@@ -54,22 +53,30 @@ void history() {
         start = start < 0 ? 0 : start;
     }
     for (int i = start; i < hist_count; i++) {
-        fprintf(stdout, "%s\n", hist[i]);
+        fprintf(fout, "%s\n", hist[i]);
+        fflush(fout);
     }
 }
 
 void cd() {
     if(w_argc != 2) {
         error();
+        return;
     }
 
+//    printf("*%s*\n", w_argv[1]);
+//    fflush(stdout);
     int rc = chdir(w_argv[1]);
+    fflush(fout);
     if(rc == -1) {
         error();
     }
 }
 
 void path() {
+    for (int i = 0; i < paths_len; i++) {
+        free(paths[i]);
+    }
     paths_len = w_argc - 1;
     for (int i = 0; i < paths_len; i++) {
         str_copy(&paths[i], w_argv[i + 1]);
@@ -82,10 +89,10 @@ void path() {
             paths[i] = temp;
         }
     }
-    fprintf(stdout, "no. of paths : %d\n", paths_len);
-    for (int i = 0; i < paths_len; i++) {
-        fprintf(stdout, "%s\n", paths[i]);
-    }
+//    fprintf(stdout, "no. of paths : %d\n", paths_len);
+//    for (int i = 0; i < paths_len; i++) {
+//        fprintf(stdout, "%s\n", paths[i]);
+//    }
 }
 
 void update_history(char *command) {
@@ -95,7 +102,7 @@ void update_history(char *command) {
 
 void print_command(char *commands[], int n) {
     for(int i = 0; i < n; i++) {
-        fprintf(stdout, "*%s*\n", commands[i]);
+        fprintf(fout, "*%s*\n", commands[i]);
     }
 }
 
@@ -113,7 +120,9 @@ int split(char *command, char *argv[], char *delim) {
         token = strtok(NULL, delim);
     }
     argv[argc] = NULL;
+//    printf("full size %ld\n", sizeof(full_command));
     free(full_command);
+//    printf("okay\n");
     return argc;
 }
 

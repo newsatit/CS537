@@ -10,6 +10,7 @@
 
 int main(int argc, char* argv[]) {
 
+	fout = stdout;
 	if (argc > 2) {
 		error();
 	}
@@ -29,8 +30,9 @@ int main(int argc, char* argv[]) {
 	paths_len = 1;
 
 	while (1) {
-		if (argc != 2) {
-		    printf("wish> ");
+		if (argc == 1) {
+		    fprintf(fout, "wish> ");
+			fflush(fout);
 		}
 
 		if (getline(&command, &len, fin) != -1) {
@@ -59,6 +61,10 @@ int main(int argc, char* argv[]) {
 
 			// redirection
 			if (re_argc == 2) {
+				for (int i = 0; i < w_argc; i++) {
+					free(w_argv[i]);
+				}
+
 				w_argc = split(re_argv[0], w_argv, " ");
 				char *w_argv_0 = NULL;
 				// save original first wish argument
@@ -83,9 +89,8 @@ int main(int argc, char* argv[]) {
 					exec_rc = execv(w_argv[0], w_argv);
 				} else {
 					wait(NULL);
-					if(exec_rc == 0)
-						continue;
 				}
+				free(w_argv_0);
 			} else {
 				char *w_argv_0 = NULL;
 				// save original first wish argument
@@ -95,7 +100,7 @@ int main(int argc, char* argv[]) {
 
 				if (!access(w_argv[0], X_OK)) {
 					int rc = fork();
-					if(rc == -1) {
+					if (rc == -1) {
 						error();
 						continue;
 					}
@@ -103,19 +108,15 @@ int main(int argc, char* argv[]) {
 						exec_rc = execv(w_argv[0], w_argv);
 					} else {
 						wait(NULL);
-						// TODO: what is this?
-						if(exec_rc == 0)
-							continue;
 					}
 				}
-
 				str_copy(&w_argv[0], w_argv_0);
+				free(w_argv_0);
 				if (!strcmp(w_argv[0], "exit")) {
-					fprintf(stdout, "exit\n");
-					if (argc == 2) {
+					if (argc != 1) {
 						fclose(fin);
 					}
-					if(w_argc > 1) {
+					if (w_argc > 1) {
 						error();
 						continue;
 					}
@@ -124,13 +125,23 @@ int main(int argc, char* argv[]) {
 					// TODO: deal with non-integer args
 				} else if (!strcmp(w_argv[0], "history")) {
 					history();
-				} else if (!strcmp(w_argv[0], "cd")) {
+				} else if (!strcmp(w_argv[0], "cd")) { ;
 					cd();
 				} else if (!strcmp(w_argv[0], "path")) {
 					path();
 				} else {
 					error();
 				}
+			}
+
+			for (int i = 0; i < w_argc; i++) {
+				free(w_argv[i]);
+			}
+			for (int i = 0; i < pi_argc; i++) {
+				free(pi_argv[i]);
+			}
+			for (int i = 0; i < re_argc; i++) {
+				free(re_argv[i]);
 			}
 
 		} else {

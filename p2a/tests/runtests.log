@@ -1,0 +1,32 @@
+starting build
+
+**********************************************************************
+
+Test build
+build project using make
+
+**********************************************************************
+Trying to clean project using make clean
+make clean
+rm -f runtests*
+rm -f *.pyc
+Trying to build project using make
+make
+echo "#!/bin/bash" > runtests
+echo "base=/u/c/s/cs537-1/tests/p2a" >> runtests
+echo "python \$base/project2a.py --test-path \$base \$@"\
+	" | tee runtests.log" >> runtests
+echo "exit \$?" >> runtests
+chmod a+x runtests
+gcc wish.c -o wish
+gcc: error: wish.c: No such file or directory
+gcc: fatal error: no input files
+compilation terminated.
+
+
+test build FAILED (0 of 5)
+ (build project using make)
+ required file 'wish' does not exist after make
+
+Skipped 15 tests.
+To keep testing after failing a test, use flag '-c' or '--continue'
