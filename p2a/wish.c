@@ -7,15 +7,10 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <limits.h>
 #include "func.h"
 
 int main(int argc, char* argv[]) {
-
-	// int rc = chdir("/u/c/s/cs537-1/tests/p2a/history");
-    // fflush(stdout);
-    // if(rc == -1) {
-    //     error();
-    // }
 
 	w_argc = 0;
 	re_argc = 0;
@@ -24,18 +19,19 @@ int main(int argc, char* argv[]) {
 	fout = stdout;
 	if (argc > 2) {
 		error();
+        exit(1);
 	}
 	if (argc == 2) {
 		fin = fopen(argv[1], "r");
 		if (fin == NULL) {
 			error();
+            exit(1);
 		}	
 	} else {
 		fin = stdin;
 	}
 	char *command = NULL;
 	size_t len = 0;
-
 
 	str_copy(&paths[0], "/bin/");
 	paths_len = 1;
@@ -45,26 +41,20 @@ int main(int argc, char* argv[]) {
 		    fprintf(fout, "wish> ");
 			fflush(fout);
 		}
-
+        if (command != NULL) {
+            free(command);
+            command = NULL;
+        }
 		if (getline(&command, &len, fin) != -1) {
-			for (int i = 0; i < w_argc; i++) {
-				free(w_argv[i]);
-				w_argc = 0;
-			}
-			for (int i = 0; i < pi_argc; i++) {
-				free(pi_argv[i]);
-				pi_argc = 0;
-			}
-			for (int i = 0; i < re_argc; i++) {
-				free(re_argv[i]);
-				re_argc = 0;
-			}
+
+            w_argc = free_args(w_argv, w_argc);
+            pi_argc = free_args(pi_argv, pi_argc);
+            re_argc = free_args(re_argv, re_argc);
 			// remove '\n' from command
             command[strlen(command) - 1] = '\0';
 			// add command to history	
 			update_history(command);
 
-			// TODO: move w_argc to later
 			w_argc = split(command, w_argv, " ");
 			if (w_argc == 0) {
 				continue;
@@ -80,8 +70,16 @@ int main(int argc, char* argv[]) {
 					error();
 					continue;
 				}
+                if (command != NULL) {
+                    free(command);
+                    command = NULL;
+                }
+                w_argc = free_args(w_argv, w_argc);
+                pi_argc = free_args(pi_argv, pi_argc);
+                re_argc = free_args(re_argv, re_argc);
+                paths_len = free_args(paths, paths_len);
+                hist_count = free_args(hist, hist_count);
 				exit(0);
-				// TODO: deal with non-integer args
 			} else if (!strcmp(w_argv[0], "history")) {
 				history();
 				continue;
@@ -95,85 +93,35 @@ int main(int argc, char* argv[]) {
 
 			re_argc = split(command, re_argv, ">");
 			pi_argc = split(command, pi_argv, "|");
-
-			// printf("%d %d\n", re_argc, pi_argc);
-			
+		
 			if (pi_argc > 2 || re_argc > 2 || (pi_argc > 1 && re_argc > 1)) {
-				// printf("here\n");
 				error();
 				continue;
 			}
-
-			// piping
-			if (pi_argc == 2) {
-
-			}
-			if (re_argc == 2) {
-				for (int i = 0; i < w_argc; i++) {
-					free(w_argv[i]);
-				}
-				w_argc = split(re_argv[0], w_argv, " ");
-				// TODO: trim white space for file name
-			}
-			char *w_argv_0 = NULL;
-			str_copy(&w_argv_0, w_argv[0]);
-			for (int i = 0; i < paths_len; i++) {
-				str_copy(&w_argv[0], paths[0]);
-				strcat(w_argv[0], w_argv_0);
-
-				int fd[2];
-				if (pipe(fd) == -1) {
-					error();
-					continue;
-				}
-				if (access(w_argv[0], X_OK) == 0) {
-					int rc = fork();
-					if (rc == -1) {
-						error();
-						free(w_argv_0);
-						continue;
-					} else if (rc == 0) {
-						// TODO: error()
-						int out = 0;
-						// printf("re_argc %d\n", re_argc);
-						if (re_argc == 2) {
-							// out = open(re_argv[1], O_WRONLY | O_CREAT | O_TRUNC, 0666);
-							out = open(re_argv[1], O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR);
-							if(out == -1) {
-								printf("%s\n", re_argv[1]);
-								error();
-								free(w_argv_0);
-								continue;
-							} else {
-								dup2(out, STDOUT_FILENO);
-								dup2(out, STDERR_FILENO);
-								close(out);
-							}
-						}
-						if(out != -1) {
-							// printf("***\n");
-							execv(w_argv[0], w_argv);
-							// printf("rro shoud not be here\n");
-							fflush(stdout);
-							error();
-							free(w_argv_0);
-						}
-						exit(1);
-						// TODO: any errors >
-						//return 0;
-					} else {
-						// TODO: error()
-						// int *status = NULL;
-						// waitpid(rc, status, 0);
-						// printf("before\n");
-						wait(NULL);
-						// printf("after\n");
-					}
-				}
-			}
-			free(w_argv_0);
+			
+			// TODO: piping
+            if (pi_argc == 2) {
+                pipe_run();
+            } else {
+                /**
+                 * redirecting and normal command call 
+                 **/
+                no_pipe_run();                
+            }
 		} else {
-			exit(0);
+            if (command != NULL) {
+                free(command);
+                command = NULL;
+            }
+            w_argc = free_args(w_argv, w_argc);
+            pi_argc = free_args(pi_argv, pi_argc);
+            re_argc = free_args(re_argv, re_argc);
+            paths_len = free_args(paths, paths_len);
+            hist_count = free_args(hist, hist_count);
+            exit(0);
 		}
 	}
-}
+ }
+
+
+

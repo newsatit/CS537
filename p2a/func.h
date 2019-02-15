@@ -8,8 +8,6 @@
 
 extern FILE *fin, *fout;
 
-extern int fd[2];
-
 // TODO: size of commands(history)
 extern char *hist[100000];
 extern int hist_count;
@@ -29,6 +27,8 @@ extern int paths_len;
 
 void str_copy(char **a, char *b);
 
+int free_args(char *argv[], int argc);
+
 void error();
 
 void history();
@@ -36,6 +36,10 @@ void history();
 void cd();
 
 void path();
+
+void pipe_run();
+
+void no_pipe_run();
 
 void update_history(char *command);
 

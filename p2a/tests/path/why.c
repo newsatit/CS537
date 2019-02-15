@@ -2,7 +2,7 @@
 #include <unistd.h>
 #include <string.h>
 
-char* error_msg = "An error has occurred\n";
+char* error_msg = "Too many arguments\n";
 char* std_msg = "There is no why\n";
 
 int main(int argc, char* argv[]) {

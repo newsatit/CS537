@@ -9,16 +9,17 @@ build project using make
 Trying to clean project using make clean
 make clean
 rm *.o
-rm wish
+rm: cannot remove '*.o': No such file or directory
+Makefile:4: recipe for target 'clean' failed
+make: *** [clean] Error 1
 Trying to build project using make
 make
-gcc -Wall -Werror -c wish.c -g
-gcc -Wall -Werror -c func.c -g
-gcc wish.o func.o -o wish
+gcc -Wall -Werror wish.c func.c -o wish
 
 
 test build PASSED (5 of 5)
  (build project using make)
+ file 'wish' exists after make clean, removing
 
 starting exit
 
@@ -28,7 +29,7 @@ Test exit
 run exit
 
 **********************************************************************
-/tmp/tmpKYMR4g/p/./wish
+/tmp/tmpGYTKmg/p/./wish
 
 
 test exit PASSED (5 of 5)
@@ -42,7 +43,7 @@ Test cd
 cd with argument, and cd without argument
 
 **********************************************************************
-/tmp/tmpKYMR4g/p/./wish
+/tmp/tmpGYTKmg/p/./wish
 
 
 test cd PASSED (5 of 5)
@@ -56,7 +57,7 @@ Test badcd
 cd to a bad directory
 
 **********************************************************************
-/tmp/tmpKYMR4g/p/./wish
+/tmp/tmpGYTKmg/p/./wish
 
 
 test badcd PASSED (5 of 5)
@@ -70,7 +71,7 @@ Test history
 test history without argument
 
 **********************************************************************
-/tmp/tmpKYMR4g/p/./wish
+/tmp/tmpGYTKmg/p/./wish
 
 
 test history PASSED (5 of 5)
@@ -84,7 +85,7 @@ Test historyarg
 test history with argument
 
 **********************************************************************
-/tmp/tmpKYMR4g/p/./wish
+/tmp/tmpGYTKmg/p/./wish
 
 
 test historyarg PASSED (5 of 5)
@@ -98,7 +99,7 @@ Test exec
 path should be /bin
 
 **********************************************************************
-/tmp/tmpKYMR4g/p/./wish
+/tmp/tmpGYTKmg/p/./wish
 
 
 test exec PASSED (5 of 5)
@@ -112,21 +113,11 @@ Test badexec
 run programs that do not exist in /bin
 
 **********************************************************************
-/tmp/tmpKYMR4g/p/./wish
-Failure: ./wish gave incorrect standard error.
-Expected: "An error has occurred\nAn error has occurred\nAn error has occurred\nls: cannot access '/bad': No such file or directory\n"
-Got:      "/bin/ls: cannot access '/bad': No such file or directory\n"
+/tmp/tmpGYTKmg/p/./wish
 
 
-test badexec FAILED (0 of 10)
+test badexec PASSED (10 of 10)
  (run programs that do not exist in /bin)
- ./wish gave incorrect standard error.
-
- Test it yourself by running
- wish </u/c/s/cs537-1/tests/p2a/badexec/in
- and check out the test folder
- /u/c/s/cs537-1/tests/p2a/badexec
- to compare your output with reference outputs. 
 
 starting path
 
@@ -136,7 +127,7 @@ Test path
 run path and a program that exists in a given path
 
 **********************************************************************
-/tmp/tmpKYMR4g/p/./wish
+/tmp/tmpGYTKmg/p/./wish
 
 
 test path PASSED (5 of 5)
@@ -150,7 +141,7 @@ Test path2
 run path with a long pathname and many different paths
 
 **********************************************************************
-/tmp/tmpKYMR4g/p/./wish
+/tmp/tmpGYTKmg/p/./wish
 
 
 test path2 PASSED (5 of 5)
@@ -164,21 +155,11 @@ Test pip
 simple piping
 
 **********************************************************************
-/tmp/tmpKYMR4g/p/./wish
-Failure: ./wish gave incorrect standard output.
-Expected: "wish> 1:this is a very very cheesy test to grep the OS \n3:there is two os here, os\n4:there should be 6 Os word in total\n7:os OS\nwish> "
-Got:      "wish> wish> "
+/tmp/tmpGYTKmg/p/./wish
 
 
-test pip FAILED (0 of 10)
+test pip PASSED (10 of 10)
  (simple piping)
- ./wish gave incorrect standard output.
-
- Test it yourself by running
- wish </u/c/s/cs537-1/tests/p2a/pip/in
- and check out the test folder
- /u/c/s/cs537-1/tests/p2a/pip
- to compare your output with reference outputs. 
 
 starting line
 
@@ -188,7 +169,7 @@ Test line
 line with maximum allowed length
 
 **********************************************************************
-/tmp/tmpKYMR4g/p/./wish
+/tmp/tmpGYTKmg/p/./wish
 
 
 test line PASSED (5 of 5)
@@ -202,7 +183,7 @@ Test batch
 test batch mode
 
 **********************************************************************
-/tmp/tmpKYMR4g/p/./wish /u/c/s/cs537-1/tests/p2a/batch/input
+/tmp/tmpGYTKmg/p/./wish /u/c/s/cs537-1/tests/p2a/batch/input
 
 
 test batch PASSED (5 of 5)
@@ -216,19 +197,11 @@ Test badarg
 extra argument to wish
 
 **********************************************************************
-/tmp/tmpKYMR4g/p/./wish /extra
-Failure: ./wish returned incorrect status code. Expected 1 got -11
+/tmp/tmpGYTKmg/p/./wish /extra
 
 
-test badarg FAILED (0 of 5)
+test badarg PASSED (5 of 5)
  (extra argument to wish)
- ./wish returned incorrect status code. Expected 1 got -11
-
- Test it yourself by running
- wish </u/c/s/cs537-1/tests/p2a/badarg/in
- and check out the test folder
- /u/c/s/cs537-1/tests/p2a/badarg
- to compare your output with reference outputs. 
 
 starting whitespace
 
@@ -238,7 +211,7 @@ Test whitespace
 leading and trailing whitespace, full whitespaces or empty string
 
 **********************************************************************
-/tmp/tmpKYMR4g/p/./wish
+/tmp/tmpGYTKmg/p/./wish
 
 
 test whitespace PASSED (5 of 5)
@@ -252,25 +225,17 @@ Test rdr
 simple redirection with no standard error
 
 **********************************************************************
-/tmp/tmpKYMR4g/p/./wish
-IOError: [Errno 2] No such file or directory: '/tmp/tmpKYMR4g/p/output.out'
+/tmp/tmpGYTKmg/p/./wish
 
 
-test rdr FAILED (0 of 10)
+test rdr PASSED (10 of 10)
  (simple redirection with no standard error)
- missing redirected standard output output.out
- Unexpected exception [Errno 2] No such file or directory: '/tmp/tmpKYMR4g/p/output.out'
-
- Test it yourself by running
- wish </u/c/s/cs537-1/tests/p2a/rdr/in
- and check out the test folder
- /u/c/s/cs537-1/tests/p2a/rdr
- to compare your output with reference outputs. 
 
 **********************************************************************
 Summary:
 test build PASSED (5 of 5)
  (build project using make)
+ file 'wish' exists after make clean, removing
 
 test exit PASSED (5 of 5)
  (run exit)
@@ -290,15 +255,8 @@ test historyarg PASSED (5 of 5)
 test exec PASSED (5 of 5)
  (path should be /bin)
 
-test badexec FAILED (0 of 10)
+test badexec PASSED (10 of 10)
  (run programs that do not exist in /bin)
- ./wish gave incorrect standard error.
-
- Test it yourself by running
- wish </u/c/s/cs537-1/tests/p2a/badexec/in
- and check out the test folder
- /u/c/s/cs537-1/tests/p2a/badexec
- to compare your output with reference outputs. 
 
 test path PASSED (5 of 5)
  (run path and a program that exists in a given path)
@@ -306,15 +264,8 @@ test path PASSED (5 of 5)
 test path2 PASSED (5 of 5)
  (run path with a long pathname and many different paths)
 
-test pip FAILED (0 of 10)
+test pip PASSED (10 of 10)
  (simple piping)
- ./wish gave incorrect standard output.
-
- Test it yourself by running
- wish </u/c/s/cs537-1/tests/p2a/pip/in
- and check out the test folder
- /u/c/s/cs537-1/tests/p2a/pip
- to compare your output with reference outputs. 
 
 test line PASSED (5 of 5)
  (line with maximum allowed length)
@@ -322,30 +273,15 @@ test line PASSED (5 of 5)
 test batch PASSED (5 of 5)
  (test batch mode)
 
-test badarg FAILED (0 of 5)
+test badarg PASSED (5 of 5)
  (extra argument to wish)
- ./wish returned incorrect status code. Expected 1 got -11
-
- Test it yourself by running
- wish </u/c/s/cs537-1/tests/p2a/badarg/in
- and check out the test folder
- /u/c/s/cs537-1/tests/p2a/badarg
- to compare your output with reference outputs. 
 
 test whitespace PASSED (5 of 5)
  (leading and trailing whitespace, full whitespaces or empty string)
 
-test rdr FAILED (0 of 10)
+test rdr PASSED (10 of 10)
  (simple redirection with no standard error)
- missing redirected standard output output.out
- Unexpected exception [Errno 2] No such file or directory: '/tmp/tmpKYMR4g/p/output.out'
 
- Test it yourself by running
- wish </u/c/s/cs537-1/tests/p2a/rdr/in
- and check out the test folder
- /u/c/s/cs537-1/tests/p2a/rdr
- to compare your output with reference outputs. 
-
-Passed 12 of 16 tests.
-Overall 12 of 16
-Points 60 of 95
+Passed 16 of 16 tests.
+Overall 16 of 16
+Points 95 of 95

@@ -1,23 +1,3 @@
-In progress:
-- history
-
-
-Not started:
-- redirection
-- piping
-- test bash mode
-
-
-Done:
-- exit
-- cd
-- path
-
-problems?
-- error message redirection
-- redirection space in file
-- redirection not in built-in just child process
-- bad command should not terminate
-- disble the error from child process
-- empty before and after | or >
+wish.c - main functionality of the program
+func.c - functionas for specific command
 
