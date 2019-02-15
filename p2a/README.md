@@ -18,4 +18,6 @@ problems?
 - redirection space in file
 - redirection not in built-in just child process
 - bad command should not terminate
+- disble the error from child process
+- empty before and after | or >
 

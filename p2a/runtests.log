@@ -28,7 +28,7 @@ Test exit
 run exit
 
 **********************************************************************
-/tmp/tmpGYDdlh/p/./wish
+/tmp/tmpKYMR4g/p/./wish
 
 
 test exit PASSED (5 of 5)
@@ -42,7 +42,7 @@ Test cd
 cd with argument, and cd without argument
 
 **********************************************************************
-/tmp/tmpGYDdlh/p/./wish
+/tmp/tmpKYMR4g/p/./wish
 
 
 test cd PASSED (5 of 5)
@@ -56,7 +56,7 @@ Test badcd
 cd to a bad directory
 
 **********************************************************************
-/tmp/tmpGYDdlh/p/./wish
+/tmp/tmpKYMR4g/p/./wish
 
 
 test badcd PASSED (5 of 5)
@@ -70,21 +70,11 @@ Test history
 test history without argument
 
 **********************************************************************
-/tmp/tmpGYDdlh/p/./wish
-Failure: ./wish gave incorrect standard output.
-Expected: "wish> Linux\nwish> _\na\nb\nc\nd\ne\nf\ng\nh\ni\nj\nk\nl\nm\nn\no\np\nq\nr\ns\nt\nu\nv\nw\nx\ny\nz\nwish> wish> err\niloveos\nin\nout\nREADME\nwish> DO YOU?\nwish> uname\nls /u/ \ncd /u/c/s/cs537-1/tests/p2a/history\nls\ncat iloveos\nhistory\nwish> "
-Got:      "wish> Linux\nwish> _\na\nb\nc\nd\ne\nf\ng\nh\ni\nj\nk\nl\nm\nn\no\np\nq\nr\ns\nt\nu\nv\nw\nx\ny\nz\nwish> wish> batch.txt\ndir\nfunc.c\nfunc.h\nfunc.o\nMakefile\np4\np4.c\np4.output\nREADME.md\nruntests.log\ntest\ntest.c\ntests\nwish\nwish.c\nwish.o\nwish> wish> uname\nls /u/ \ncd /u/c/s/cs537-1/tests/p2a/history\nls\ncat iloveos\nhistory\nwish> "
+/tmp/tmpKYMR4g/p/./wish
 
 
-test history FAILED (0 of 5)
+test history PASSED (5 of 5)
  (test history without argument)
- ./wish gave incorrect standard output.
-
- Test it yourself by running
- wish </u/c/s/cs537-1/tests/p2a/history/in
- and check out the test folder
- /u/c/s/cs537-1/tests/p2a/history
- to compare your output with reference outputs. 
 
 starting historyarg
 
@@ -94,21 +84,11 @@ Test historyarg
 test history with argument
 
 **********************************************************************
-/tmp/tmpGYDdlh/p/./wish
-Failure: ./wish gave incorrect standard output.
-Expected: "wish> Linux\nwish> _\na\nb\nc\nd\ne\nf\ng\nh\ni\nj\nk\nl\nm\nn\no\np\nq\nr\ns\nt\nu\nv\nw\nx\ny\nz\nwish> wish> err\niloveos\nin\nout\nREADME\nwish> DO YOU?\nwish> cat iloveos\nhistory 2\nwish> wish> "
-Got:      "wish> Linux\nwish> _\na\nb\nc\nd\ne\nf\ng\nh\ni\nj\nk\nl\nm\nn\no\np\nq\nr\ns\nt\nu\nv\nw\nx\ny\nz\nwish> wish> batch.txt\ndir\nfunc.c\nfunc.h\nfunc.o\nMakefile\np4\np4.c\np4.output\nREADME.md\nruntests.log\ntest\ntest.c\ntests\nwish\nwish.c\nwish.o\nwish> wish> cat iloveos\nhistory 2\nwish> uname\nls /u/ \ncd /u/c/s/cs537-1/tests/p2a/history\nls\ncat iloveos\nhistory 2\nhistory 3 6\nwish> "
+/tmp/tmpKYMR4g/p/./wish
 
 
-test historyarg FAILED (0 of 5)
+test historyarg PASSED (5 of 5)
  (test history with argument)
- ./wish gave incorrect standard output.
-
- Test it yourself by running
- wish </u/c/s/cs537-1/tests/p2a/historyarg/in
- and check out the test folder
- /u/c/s/cs537-1/tests/p2a/historyarg
- to compare your output with reference outputs. 
 
 starting exec
 
@@ -118,7 +98,7 @@ Test exec
 path should be /bin
 
 **********************************************************************
-/tmp/tmpGYDdlh/p/./wish
+/tmp/tmpKYMR4g/p/./wish
 
 
 test exec PASSED (5 of 5)
@@ -132,10 +112,10 @@ Test badexec
 run programs that do not exist in /bin
 
 **********************************************************************
-/tmp/tmpGYDdlh/p/./wish
+/tmp/tmpKYMR4g/p/./wish
 Failure: ./wish gave incorrect standard error.
 Expected: "An error has occurred\nAn error has occurred\nAn error has occurred\nls: cannot access '/bad': No such file or directory\n"
-Got:      "An error has occurred\nAn error has occurred\nAn error has occurred\n/bin/ls: cannot access '/bad': No such file or directory\n"
+Got:      "/bin/ls: cannot access '/bad': No such file or directory\n"
 
 
 test badexec FAILED (0 of 10)
@@ -156,21 +136,11 @@ Test path
 run path and a program that exists in a given path
 
 **********************************************************************
-/tmp/tmpGYDdlh/p/./wish
-Failure: ./wish gave incorrect standard output.
-Expected: "wish> wish> Too many arguments\nwish> "
-Got:      "wish> wish> wish> "
+/tmp/tmpKYMR4g/p/./wish
 
 
-test path FAILED (0 of 5)
+test path PASSED (5 of 5)
  (run path and a program that exists in a given path)
- ./wish gave incorrect standard output.
-
- Test it yourself by running
- wish </u/c/s/cs537-1/tests/p2a/path/in
- and check out the test folder
- /u/c/s/cs537-1/tests/p2a/path
- to compare your output with reference outputs. 
 
 starting path2
 
@@ -180,19 +150,11 @@ Test path2
 run path with a long pathname and many different paths
 
 **********************************************************************
-/tmp/tmpGYDdlh/p/./wish
-Failure: ./wish returned incorrect status code. Expected 0 got -6
+/tmp/tmpKYMR4g/p/./wish
 
 
-test path2 FAILED (0 of 5)
+test path2 PASSED (5 of 5)
  (run path with a long pathname and many different paths)
- ./wish returned incorrect status code. Expected 0 got -6
-
- Test it yourself by running
- wish </u/c/s/cs537-1/tests/p2a/path2/in
- and check out the test folder
- /u/c/s/cs537-1/tests/p2a/path2
- to compare your output with reference outputs. 
 
 starting pip
 
@@ -202,7 +164,7 @@ Test pip
 simple piping
 
 **********************************************************************
-/tmp/tmpGYDdlh/p/./wish
+/tmp/tmpKYMR4g/p/./wish
 Failure: ./wish gave incorrect standard output.
 Expected: "wish> 1:this is a very very cheesy test to grep the OS \n3:there is two os here, os\n4:there should be 6 Os word in total\n7:os OS\nwish> "
 Got:      "wish> wish> "
@@ -226,19 +188,11 @@ Test line
 line with maximum allowed length
 
 **********************************************************************
-/tmp/tmpGYDdlh/p/./wish
-Failure: ./wish returned incorrect status code. Expected 0 got -11
+/tmp/tmpKYMR4g/p/./wish
 
 
-test line FAILED (0 of 5)
+test line PASSED (5 of 5)
  (line with maximum allowed length)
- ./wish returned incorrect status code. Expected 0 got -11
-
- Test it yourself by running
- wish </u/c/s/cs537-1/tests/p2a/line/in
- and check out the test folder
- /u/c/s/cs537-1/tests/p2a/line
- to compare your output with reference outputs. 
 
 starting batch
 
@@ -248,21 +202,11 @@ Test batch
 test batch mode
 
 **********************************************************************
-/tmp/tmpGYDdlh/p/./wish /u/c/s/cs537-1/tests/p2a/batch/input
-Failure: ./wish gave incorrect standard error.
-Expected: ""
-Got:      "An error has occurred\n"
+/tmp/tmpKYMR4g/p/./wish /u/c/s/cs537-1/tests/p2a/batch/input
 
 
-test batch FAILED (0 of 5)
+test batch PASSED (5 of 5)
  (test batch mode)
- ./wish gave incorrect standard error.
-
- Test it yourself by running
- wish </u/c/s/cs537-1/tests/p2a/batch/in
- and check out the test folder
- /u/c/s/cs537-1/tests/p2a/batch
- to compare your output with reference outputs. 
 
 starting badarg
 
@@ -272,7 +216,7 @@ Test badarg
 extra argument to wish
 
 **********************************************************************
-/tmp/tmpGYDdlh/p/./wish /extra
+/tmp/tmpKYMR4g/p/./wish /extra
 Failure: ./wish returned incorrect status code. Expected 1 got -11
 
 
@@ -294,19 +238,11 @@ Test whitespace
 leading and trailing whitespace, full whitespaces or empty string
 
 **********************************************************************
-/tmp/tmpGYDdlh/p/./wish
-Failure: ./wish returned incorrect status code. Expected 0 got -11
+/tmp/tmpKYMR4g/p/./wish
 
 
-test whitespace FAILED (0 of 5)
+test whitespace PASSED (5 of 5)
  (leading and trailing whitespace, full whitespaces or empty string)
- ./wish returned incorrect status code. Expected 0 got -11
-
- Test it yourself by running
- wish </u/c/s/cs537-1/tests/p2a/whitespace/in
- and check out the test folder
- /u/c/s/cs537-1/tests/p2a/whitespace
- to compare your output with reference outputs. 
 
 starting rdr
 
@@ -316,14 +252,14 @@ Test rdr
 simple redirection with no standard error
 
 **********************************************************************
-/tmp/tmpGYDdlh/p/./wish
-IOError: [Errno 2] No such file or directory: '/tmp/tmpGYDdlh/p/output.out'
+/tmp/tmpKYMR4g/p/./wish
+IOError: [Errno 2] No such file or directory: '/tmp/tmpKYMR4g/p/output.out'
 
 
 test rdr FAILED (0 of 10)
  (simple redirection with no standard error)
  missing redirected standard output output.out
- Unexpected exception [Errno 2] No such file or directory: '/tmp/tmpGYDdlh/p/output.out'
+ Unexpected exception [Errno 2] No such file or directory: '/tmp/tmpKYMR4g/p/output.out'
 
  Test it yourself by running
  wish </u/c/s/cs537-1/tests/p2a/rdr/in
@@ -345,25 +281,11 @@ test cd PASSED (5 of 5)
 test badcd PASSED (5 of 5)
  (cd to a bad directory)
 
-test history FAILED (0 of 5)
+test history PASSED (5 of 5)
  (test history without argument)
- ./wish gave incorrect standard output.
 
- Test it yourself by running
- wish </u/c/s/cs537-1/tests/p2a/history/in
- and check out the test folder
- /u/c/s/cs537-1/tests/p2a/history
- to compare your output with reference outputs. 
-
-test historyarg FAILED (0 of 5)
+test historyarg PASSED (5 of 5)
  (test history with argument)
- ./wish gave incorrect standard output.
-
- Test it yourself by running
- wish </u/c/s/cs537-1/tests/p2a/historyarg/in
- and check out the test folder
- /u/c/s/cs537-1/tests/p2a/historyarg
- to compare your output with reference outputs. 
 
 test exec PASSED (5 of 5)
  (path should be /bin)
@@ -378,25 +300,11 @@ test badexec FAILED (0 of 10)
  /u/c/s/cs537-1/tests/p2a/badexec
  to compare your output with reference outputs. 
 
-test path FAILED (0 of 5)
+test path PASSED (5 of 5)
  (run path and a program that exists in a given path)
- ./wish gave incorrect standard output.
 
- Test it yourself by running
- wish </u/c/s/cs537-1/tests/p2a/path/in
- and check out the test folder
- /u/c/s/cs537-1/tests/p2a/path
- to compare your output with reference outputs. 
-
-test path2 FAILED (0 of 5)
+test path2 PASSED (5 of 5)
  (run path with a long pathname and many different paths)
- ./wish returned incorrect status code. Expected 0 got -6
-
- Test it yourself by running
- wish </u/c/s/cs537-1/tests/p2a/path2/in
- and check out the test folder
- /u/c/s/cs537-1/tests/p2a/path2
- to compare your output with reference outputs. 
 
 test pip FAILED (0 of 10)
  (simple piping)
@@ -408,25 +316,11 @@ test pip FAILED (0 of 10)
  /u/c/s/cs537-1/tests/p2a/pip
  to compare your output with reference outputs. 
 
-test line FAILED (0 of 5)
+test line PASSED (5 of 5)
  (line with maximum allowed length)
- ./wish returned incorrect status code. Expected 0 got -11
 
- Test it yourself by running
- wish </u/c/s/cs537-1/tests/p2a/line/in
- and check out the test folder
- /u/c/s/cs537-1/tests/p2a/line
- to compare your output with reference outputs. 
-
-test batch FAILED (0 of 5)
+test batch PASSED (5 of 5)
  (test batch mode)
- ./wish gave incorrect standard error.
-
- Test it yourself by running
- wish </u/c/s/cs537-1/tests/p2a/batch/in
- and check out the test folder
- /u/c/s/cs537-1/tests/p2a/batch
- to compare your output with reference outputs. 
 
 test badarg FAILED (0 of 5)
  (extra argument to wish)
@@ -438,20 +332,13 @@ test badarg FAILED (0 of 5)
  /u/c/s/cs537-1/tests/p2a/badarg
  to compare your output with reference outputs. 
 
-test whitespace FAILED (0 of 5)
+test whitespace PASSED (5 of 5)
  (leading and trailing whitespace, full whitespaces or empty string)
- ./wish returned incorrect status code. Expected 0 got -11
-
- Test it yourself by running
- wish </u/c/s/cs537-1/tests/p2a/whitespace/in
- and check out the test folder
- /u/c/s/cs537-1/tests/p2a/whitespace
- to compare your output with reference outputs. 
 
 test rdr FAILED (0 of 10)
  (simple redirection with no standard error)
  missing redirected standard output output.out
- Unexpected exception [Errno 2] No such file or directory: '/tmp/tmpGYDdlh/p/output.out'
+ Unexpected exception [Errno 2] No such file or directory: '/tmp/tmpKYMR4g/p/output.out'
 
  Test it yourself by running
  wish </u/c/s/cs537-1/tests/p2a/rdr/in
@@ -459,6 +346,6 @@ test rdr FAILED (0 of 10)
  /u/c/s/cs537-1/tests/p2a/rdr
  to compare your output with reference outputs. 
 
-Passed 5 of 16 tests.
-Overall 5 of 16
-Points 25 of 95
+Passed 12 of 16 tests.
+Overall 12 of 16
+Points 60 of 95

@@ -32,13 +32,13 @@ int paths_len;
  * @param b source string
  */
 void str_copy(char **a, char *b) {
-    *a = (char*)malloc(sizeof(b));
+    *a = (char*)malloc(sizeof(char) * ( strlen(b) + 1));
     strcpy(*a, b);
 }
 
 void error() {
     char error_message[30] = "An error has occurred\n";
-    fprintf(stderr, "%s\n", strerror(errno));
+    //  fprintf(stderr, "%d: %s\n", errno, strerror(errno));
     write(STDERR_FILENO, error_message, strlen(error_message));
 }
 
@@ -47,6 +47,7 @@ void history() {
     int start = 0;
     if (w_argc > 2) {
         error();
+        return;
     }
     if (w_argc == 2) {
         start = hist_count - atoi(w_argv[1]);
@@ -63,7 +64,6 @@ void cd() {
         error();
         return;
     }
-
 //    printf("*%s*\n", w_argv[1]);
 //    fflush(stdout);
     int rc = chdir(w_argv[1]);
@@ -112,17 +112,17 @@ int split(char *command, char *argv[], char *delim) {
     str_copy(&full_command, command);
     char* token = NULL;
 
-    token = strtok(full_command, delim);
+    char* rest = full_command;; 
     int argc = 0;
 
-    while (token != NULL) {
+    while ((token = strtok_r(rest, delim, &rest))) {
         str_copy(&argv[argc++], token);
-        token = strtok(NULL, delim);
+        // printf("token %s\n", token);
     }
     argv[argc] = NULL;
-//    printf("full size %ld\n", sizeof(full_command));
-    free(full_command);
-//    printf("okay\n");
+
+    if (full_command != NULL)
+        free(full_command);
     return argc;
 }
 
