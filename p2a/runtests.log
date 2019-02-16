@@ -8,18 +8,14 @@ build project using make
 **********************************************************************
 Trying to clean project using make clean
 make clean
-rm *.o
-rm: cannot remove '*.o': No such file or directory
-Makefile:4: recipe for target 'clean' failed
-make: *** [clean] Error 1
+rm wish
 Trying to build project using make
 make
-gcc -Wall -Werror wish.c func.c -o wish
+gcc -Wall -Werror wish.c func.c -o wish -g
 
 
 test build PASSED (5 of 5)
  (build project using make)
- file 'wish' exists after make clean, removing
 
 starting exit
 
@@ -29,7 +25,7 @@ Test exit
 run exit
 
 **********************************************************************
-/tmp/tmpGYTKmg/p/./wish
+/tmp/tmp62dTco/p/./wish
 
 
 test exit PASSED (5 of 5)
@@ -43,7 +39,7 @@ Test cd
 cd with argument, and cd without argument
 
 **********************************************************************
-/tmp/tmpGYTKmg/p/./wish
+/tmp/tmp62dTco/p/./wish
 
 
 test cd PASSED (5 of 5)
@@ -57,7 +53,7 @@ Test badcd
 cd to a bad directory
 
 **********************************************************************
-/tmp/tmpGYTKmg/p/./wish
+/tmp/tmp62dTco/p/./wish
 
 
 test badcd PASSED (5 of 5)
@@ -71,7 +67,7 @@ Test history
 test history without argument
 
 **********************************************************************
-/tmp/tmpGYTKmg/p/./wish
+/tmp/tmp62dTco/p/./wish
 
 
 test history PASSED (5 of 5)
@@ -85,7 +81,7 @@ Test historyarg
 test history with argument
 
 **********************************************************************
-/tmp/tmpGYTKmg/p/./wish
+/tmp/tmp62dTco/p/./wish
 
 
 test historyarg PASSED (5 of 5)
@@ -99,7 +95,7 @@ Test exec
 path should be /bin
 
 **********************************************************************
-/tmp/tmpGYTKmg/p/./wish
+/tmp/tmp62dTco/p/./wish
 
 
 test exec PASSED (5 of 5)
@@ -113,7 +109,7 @@ Test badexec
 run programs that do not exist in /bin
 
 **********************************************************************
-/tmp/tmpGYTKmg/p/./wish
+/tmp/tmp62dTco/p/./wish
 
 
 test badexec PASSED (10 of 10)
@@ -127,7 +123,7 @@ Test path
 run path and a program that exists in a given path
 
 **********************************************************************
-/tmp/tmpGYTKmg/p/./wish
+/tmp/tmp62dTco/p/./wish
 
 
 test path PASSED (5 of 5)
@@ -141,7 +137,7 @@ Test path2
 run path with a long pathname and many different paths
 
 **********************************************************************
-/tmp/tmpGYTKmg/p/./wish
+/tmp/tmp62dTco/p/./wish
 
 
 test path2 PASSED (5 of 5)
@@ -155,7 +151,7 @@ Test pip
 simple piping
 
 **********************************************************************
-/tmp/tmpGYTKmg/p/./wish
+/tmp/tmp62dTco/p/./wish
 
 
 test pip PASSED (10 of 10)
@@ -169,7 +165,7 @@ Test line
 line with maximum allowed length
 
 **********************************************************************
-/tmp/tmpGYTKmg/p/./wish
+/tmp/tmp62dTco/p/./wish
 
 
 test line PASSED (5 of 5)
@@ -183,7 +179,7 @@ Test batch
 test batch mode
 
 **********************************************************************
-/tmp/tmpGYTKmg/p/./wish /u/c/s/cs537-1/tests/p2a/batch/input
+/tmp/tmp62dTco/p/./wish /u/c/s/cs537-1/tests/p2a/batch/input
 
 
 test batch PASSED (5 of 5)
@@ -197,7 +193,7 @@ Test badarg
 extra argument to wish
 
 **********************************************************************
-/tmp/tmpGYTKmg/p/./wish /extra
+/tmp/tmp62dTco/p/./wish /extra
 
 
 test badarg PASSED (5 of 5)
@@ -211,7 +207,7 @@ Test whitespace
 leading and trailing whitespace, full whitespaces or empty string
 
 **********************************************************************
-/tmp/tmpGYTKmg/p/./wish
+/tmp/tmp62dTco/p/./wish
 
 
 test whitespace PASSED (5 of 5)
@@ -225,7 +221,7 @@ Test rdr
 simple redirection with no standard error
 
 **********************************************************************
-/tmp/tmpGYTKmg/p/./wish
+/tmp/tmp62dTco/p/./wish
 
 
 test rdr PASSED (10 of 10)
@@ -235,7 +231,6 @@ test rdr PASSED (10 of 10)
 Summary:
 test build PASSED (5 of 5)
  (build project using make)
- file 'wish' exists after make clean, removing
 
 test exit PASSED (5 of 5)
  (run exit)

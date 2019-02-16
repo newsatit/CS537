@@ -50,20 +50,19 @@ int main(int argc, char* argv[]) {
             w_argc = free_args(w_argv, w_argc);
             pi_argc = free_args(pi_argv, pi_argc);
             re_argc = free_args(re_argv, re_argc);
+			
 			// remove '\n' from command
             command[strlen(command) - 1] = '\0';
 			// add command to history	
 			update_history(command);
 
+			// parse the arguments of the command
 			w_argc = split(command, w_argv, " ");
 			if (w_argc == 0) {
 				continue;
 			}
-			// for (int i = 0; i < w_argc; i++) {
-			// 	printf("command: %s\n", w_argv[i]);
-			// }
 			if (!strcmp(w_argv[0], "exit")) {
-				if (argc != 1) {
+				if (argc == 1) {
 					fclose(fin);
 				}
 				if (w_argc > 1) {
@@ -92,20 +91,31 @@ int main(int argc, char* argv[]) {
 			}
 
 			re_argc = split(command, re_argv, ">");
-			pi_argc = split(command, pi_argv, "|");
-		
-			if (pi_argc > 2 || re_argc > 2 || (pi_argc > 1 && re_argc > 1)) {
+			pi_argc = split(command, pi_argv, "|");		
+			// counter for '|' and '>'	
+			int pi_c = 0;		
+			int re_c = 0;
+			int len = strlen(command);
+			for (int i = 0; i < len; i++) {
+				if (command[i] == '|') {
+					pi_c++;
+				} else if (command[i] == '>') {
+					re_c++;
+				}
+			}
+
+			// catch syntax error
+			if (pi_argc > 2 || re_argc > 2 || (pi_argc > 1 && re_argc > 1) 
+			|| re_c > 1 || pi_c > 1 || (pi_c > 0 && re_c > 0))  {
 				error();
 				continue;
 			}
-			
-			// TODO: piping
+
+			// execute command with piping
             if (pi_argc == 2) {
                 pipe_run();
             } else {
-                /**
-                 * redirecting and normal command call 
-                 **/
+                // execute non-built in commands (may be with redirection)
                 no_pipe_run();                
             }
 		} else {

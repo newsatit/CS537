@@ -2,9 +2,7 @@ In progress:
 
 
 Not started:
-- redirection
-- piping
-- test bash mode
+
 
 
 Done:
@@ -18,6 +16,9 @@ Done:
 - bad command should not terminate
 - disble the error from child process
 - empty before and after | or >
+- redirection
+- piping
+- test bash mode
 problems?
 
 
