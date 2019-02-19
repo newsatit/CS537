@@ -1,0 +1,59 @@
+[33mcommit cdffb077ff35cff403d7deb41eaaba1a74084685[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: Dawanit Satitsumpun <dawanit@snares-07.cs.wisc.edu>
+Date:   Wed Feb 13 15:15:08 2019 -0600
+
+    Basic redirection
+
+[33mcommit 1533a85d0d66256d99f9cc1ec2d8fd47b57cf774[m
+Author: Dawanit Satitsumpun <dawanit@royal-16.cs.wisc.edu>
+Date:   Wed Feb 13 09:13:37 2019 -0600
+
+    Complete mostly built in and path exectables
+
+[33mcommit ee12c1ddae62996a579aee3f66cc55837a833be4[m
+Author: Dawanit Satitsumpun <dawanit@royal-30.cs.wisc.edu>
+Date:   Sun Feb 10 18:01:45 2019 -0600
+
+    Complete p1b and start p2a
+
+[33mcommit bba30ec129e8a5694968e709e101762a896a6d05[m
+Author: Dawanit Satitsumpun <dawanit@royal-03.cs.wisc.edu>
+Date:   Sat Feb 2 12:33:13 2019 -0600
+
+    Add qemu
+
+[33mcommit 4be45afd85d7d21565048376507931b6c1235403[m
+Author: Dawanit Satitsumpun <dawanit@rockhopper-04.cs.wisc.edu>
+Date:   Sun Jan 27 11:39:26 2019 -0600
+
+    Implement my-uniq.c - tests passes
+
+[33mcommit f6c09dd55c713de31902a7a9691d7ad0f242c2ad[m
+Author: Dawanit Satitsumpun <dawanit@rockhopper-04.cs.wisc.edu>
+Date:   Sun Jan 27 10:22:43 2019 -0600
+
+    Implement my-sed.c - test passed
+
+[33mcommit 9d3c201d1cc526141e0a801151678db937b1b40e[m
+Author: Dawanit Satitsumpun <dawanit@royal-30.cs.wisc.edu>
+Date:   Fri Jan 25 23:09:00 2019 -0600
+
+    Fix my-cat.c - test passed
+
+[33mcommit 3a76e019b462b4d48cd25c6f1bc30b2b81089e22[m
+Author: Neal Satitsumpun <satitsumpun@wisc.edu>
+Date:   Fri Jan 25 22:53:09 2019 -0600
+
+    Finish my-cat
+
+[33mcommit 1372fed5c4baafeef18901bf6658029d678f733a[m
+Author: Neal Satitsumpun <satitsumpun@wisc.edu>
+Date:   Fri Jan 25 21:15:25 2019 -0600
+
+    Create Project 1a
+
+[33mcommit ec3b0bbbefe9c6c594c5972bb8294715ed2b06ac[m
+Author: Neal Satitsumpun <satitsumpun@wisc.edu>
+Date:   Wed Jan 23 17:12:40 2019 -0600
+
+    first commit
