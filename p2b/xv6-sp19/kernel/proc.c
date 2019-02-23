@@ -65,7 +65,8 @@ found:
   p->pid = nextpid++;
   p->priority = 3;
   for (int i = 0; i < NLAYER; i++) {
-
+    p->ticks[i] = 0;
+    p->wait_ticks[i] = 0;
   }
   release(&ptable.lock);
 
@@ -281,11 +282,19 @@ int get_highest_pri() {
 }
 
 // Update the wait ticks for the processes in ptable
+// Also do periodic boosting
 void update_wait() {
+  int max_wait[] = {500, 320, 160, 0};
   struct proc *p;
   for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
      if (p->state == RUNNABLE) {
-      
+       int pri = p->priority;
+       p->wait_ticks[pri]++;
+        if (pri < 3 && p->wait_ticks[pri] >= max_wait[pri]) {
+          pri++;
+          p->wait_ticks[pri] = 0;
+          p->priority = pri;
+       }  
      }
   }
   return;
@@ -303,14 +312,18 @@ scheduler(void)
 {
   struct proc *p;
 
+  int time_slices[] = {0, 32, 16, 8};
+  int highest_pri = 0;
+
   for(;;){
     // Enable interrupts on this processor.
     sti();
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
+    highest_pri = get_highest_pri();
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE)
+      if(p->state != RUNNABLE || p->priority != highest_pri)
         continue;
 
       // Switch to chosen process.  It is the process's job
@@ -326,6 +339,22 @@ scheduler(void)
       // Process is done running for now.
       // It should have changed its p->state before coming back.
       proc = 0;
+
+      // increment time slice for last running process
+      int pri = p->priority;
+      int ticks = ++p->ticks[pri];
+      // if (p->pid >= 1)
+      // cprintf("name : %s, pid : %d, ticks : %d, pri: %d\n", 
+      // p->name, p->pid, p->ticks[pri], pri);
+      if (pri > 0 && ticks >= time_slices[pri]) {
+        p->priority--;
+        // if (p->pid >= 3)
+        // cprintf("Demoted\n");
+      }
+      // increment wait time for runnable processes
+      update_wait();
+      // get the highest priority that has processes
+      highest_pri = get_highest_pri();      
     }
     release(&ptable.lock);
 
