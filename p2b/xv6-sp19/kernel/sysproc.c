@@ -5,6 +5,18 @@
 #include "mmu.h"
 #include "proc.h"
 #include "sysfunc.h"
+#include "pstat.h"
+
+int sys_getpinfo(void) {
+
+  struct pstat *pst;
+
+  if (argptr(0, (void*)(&pst), sizeof(*pst)) < 0) {
+    return -1;
+  }
+  return getpinfo(pst);
+
+}
 
 int
 sys_fork(void)

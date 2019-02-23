@@ -5,6 +5,7 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+#include "pstat.h"
 
 struct {
   struct spinlock lock;
@@ -18,6 +19,23 @@ extern void forkret(void);
 extern void trapret(void);
 
 static void wakeup1(void *chan);
+
+int getpinfo(struct pstat *pst) {
+
+  for (int i = 0; i < NPROC; i++) {
+    struct proc p = ptable.proc[i];
+    pst->inuse[i] = 1;
+    pst->pid[i] = p.pid;
+    pst->priority[i] = p.priority;
+    pst->state[NPROC] = p.state;
+    for (int j = 0; j < NLAYER; j++) {
+      pst->ticks[i][j] = p.ticks[j];
+      pst->wait_ticks[i][j] = p.wait_ticks[j];      
+    }
+  }
+  return 0;
+
+}
 
 void
 pinit(void)
@@ -45,6 +63,10 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+  p->priority = 3;
+  for (int i = 0; i < NLAYER; i++) {
+
+  }
   release(&ptable.lock);
 
   // Allocate kernel stack if possible.
@@ -245,6 +267,30 @@ wait(void)
   }
 }
 
+
+// Get the highest priority of the processes in ptable
+int get_highest_pri() {
+  int hi = 0;
+  struct proc *p;
+   for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+     if (p->state == RUNNABLE) {
+       hi = p->priority > hi ? p->priority : hi;
+     }
+  }
+  return hi;
+}
+
+// Update the wait ticks for the processes in ptable
+void update_wait() {
+  struct proc *p;
+  for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+     if (p->state == RUNNABLE) {
+      
+     }
+  }
+  return;
+}
+
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
 // Scheduler never returns.  It loops, doing:
@@ -271,9 +317,10 @@ scheduler(void)
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
       proc = p;
-      switchuvm(p);
+      switchuvm(p); // switch page table
       p->state = RUNNING;
-      swtch(&cpu->scheduler, proc->context);
+      // cprintf("process chosen to run %s, pid %d\n", p->name, p->pid);
+      swtch(&cpu->scheduler, proc->context); // switch to the kernel stack of the process
       switchkvm();
 
       // Process is done running for now.
