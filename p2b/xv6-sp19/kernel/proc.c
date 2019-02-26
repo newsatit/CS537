@@ -64,6 +64,7 @@ found:
   p->state = EMBRYO;
   p->pid = nextpid++;
   p->priority = 3;
+  p->pos = -1;
   for (int i = 0; i < NLAYER; i++) {
     p->ticks[i] = 0;
     p->wait_ticks[i] = 0;
@@ -270,16 +271,19 @@ wait(void)
 
 
 // Get the highest priority of the processes in ptable
-int get_highest_pri() {
-  int hi = 0;
+// and Get the earliest runnable process that is in priority 0 
+void get_highest_pri(int *hi, int *earl) {
+  *hi = 0;
+  *earl = (1<<31);
   struct proc *p;
    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
      if (p->state == RUNNABLE) {
-       hi = p->priority > hi ? p->priority : hi;
+       *hi = p->priority > *hi ? p->priority : *hi;
+       *earl = (p->priority == 0 && p->pos < *earl) ? p->pos : *earl;
      }
   }
-  return hi;
 }
+
 
 // Update the wait ticks for the processes in ptable
 // Also do periodic boosting
@@ -291,9 +295,11 @@ void update_wait() {
        int pri = p->priority;
        p->wait_ticks[pri]++;
         if (pri < 3 && p->wait_ticks[pri] == max_wait[pri]) {
+          // promoted
           pri++;
           p->wait_ticks[pri] = 0;
           p->priority = pri;
+          p->pos = -1;
        }  
      }
   }
@@ -314,6 +320,8 @@ scheduler(void)
 
   int time_slices[] = {0, 32, 16, 8};
   int highest_pri = 0;
+  int earliest_pos = (1<<31);
+  int pos_count = 0; // counter for the position in the priority 0 queue
 
   for(;;){
     // Enable interrupts on this processor.
@@ -321,8 +329,8 @@ scheduler(void)
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-    highest_pri = get_highest_pri();
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    get_highest_pri(&highest_pri, &earliest_pos);
+    for(p = ptable.proc; p < &ptable.proc[NPROC];){
       if(p->state != RUNNABLE || p->priority != highest_pri)
         continue;
 
@@ -344,17 +352,17 @@ scheduler(void)
       // increment time slice for last running process
       int pri = p->priority;
       int ticks = ++p->ticks[pri];
-      // if (p->pid >= 1)
-      // cprintf("name : %s, pid : %d, ticks : %d, pri: %d\n", 
       // check if need to demote
       if (pri > 0 && ticks % time_slices[pri] == 0) {
           // demoted
           pri--;
           p->wait_ticks[pri] = 0;
           p->priority = pri;
+          p->pos = pos_count;
+          // go to the next process
+          p++;
       }
-      // get the highest priority that still has runnable
-      highest_pri = get_highest_pri();      
+      get_highest_pri(&highest_pri, &earliest_pos);      
     }
     release(&ptable.lock);
 

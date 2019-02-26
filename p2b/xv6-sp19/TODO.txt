@@ -1,4 +1,6 @@
 TODO:
+    - fix round-robin times slices not 8 times slices
+
     FIFO for lowest priority
     - https://piazza.com/class/jql5yyu0x8a12k?cid=925
         - cannot use static variable

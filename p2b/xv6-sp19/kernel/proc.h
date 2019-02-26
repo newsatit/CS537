@@ -78,6 +78,7 @@ struct proc {
   int priority;  // current priority level of each process (0-3)
   int ticks[NLAYER];  // number of ticks each process has accumulated at each of 4 priorities
   int wait_ticks[NLAYER]; // number of ticks each process has waited before being scheduled
+  int pos; // position in the priority 0 queue, -1 if not in priority 0
 
 };
 
