@@ -290,7 +290,7 @@ void update_wait() {
      if (p->state == RUNNABLE) {
        int pri = p->priority;
        p->wait_ticks[pri]++;
-        if (pri < 3 && p->wait_ticks[pri] >= max_wait[pri]) {
+        if (pri < 3 && p->wait_ticks[pri] == max_wait[pri]) {
           pri++;
           p->wait_ticks[pri] = 0;
           p->priority = pri;
@@ -332,7 +332,8 @@ scheduler(void)
       proc = p;
       switchuvm(p); // switch page table
       p->state = RUNNING;
-      // cprintf("process chosen to run %s, pid %d\n", p->name, p->pid);
+        // increment wait time for runnable processes
+      update_wait();
       swtch(&cpu->scheduler, proc->context); // switch to the kernel stack of the process
       switchkvm();
 
@@ -345,15 +346,14 @@ scheduler(void)
       int ticks = ++p->ticks[pri];
       // if (p->pid >= 1)
       // cprintf("name : %s, pid : %d, ticks : %d, pri: %d\n", 
-      // p->name, p->pid, p->ticks[pri], pri);
-      if (pri > 0 && ticks >= time_slices[pri]) {
-        p->priority--;
-        // if (p->pid >= 3)
-        // cprintf("Demoted\n");
+      // check if need to demote
+      if (pri > 0 && ticks % time_slices[pri] == 0) {
+          // demoted
+          pri--;
+          p->wait_ticks[pri] = 0;
+          p->priority = pri;
       }
-      // increment wait time for runnable processes
-      update_wait();
-      // get the highest priority that has processes
+      // get the highest priority that still has runnable
       highest_pri = get_highest_pri();      
     }
     release(&ptable.lock);

@@ -1,4 +1,8 @@
 TODO:
+    FIFO for lowest priority
+    - https://piazza.com/class/jql5yyu0x8a12k?cid=925
+        - cannot use static variable
+
     Init Process Level
     - Modify in the struct  
 

@@ -19,8 +19,8 @@ main(int argc, char *argv[])
     int mypid = getpid();
 
     for(i = 1; i < atoi(argv[1]); i++){
-        // x = x + i;
-        x = x + 1;
+         x = x + i;
+//        x = x + 1;
     }
 
     getpinfo(&st);
