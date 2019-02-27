@@ -331,8 +331,12 @@ scheduler(void)
     acquire(&ptable.lock);
     get_highest_pri(&highest_pri, &earliest_pos);
     for(p = ptable.proc; p < &ptable.proc[NPROC];){
-      if(p->state != RUNNABLE || p->priority != highest_pri)
+      
+      if(p->state != RUNNABLE || p->priority != highest_pri) {
+        p++;
         continue;
+      }
+        
 
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
@@ -362,7 +366,7 @@ scheduler(void)
           // go to the next process
           p++;
       }
-      get_highest_pri(&highest_pri, &earliest_pos);      
+      get_highest_pri(&highest_pri, &earliest_pos);
     }
     release(&ptable.lock);
 

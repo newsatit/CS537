@@ -1,30 +1,41 @@
 TODO:
-    - fix round-robin times slices not 8 times slices
+
+
+
+
+
+
+
+
+
+
+
+In-Progress:
+
+
+Done:
+- fix round-robin times slices not 8 times slices
 
     FIFO for lowest priority
     - https://piazza.com/class/jql5yyu0x8a12k?cid=925
         - cannot use static variable
 
-    Init Process Level
-    - Modify in the struct  
+            Init Process Level
+    - Modify in the struct 
 
-    Schedule
+        Schedule
     - find the process on the highest Level
     - choose the process with the first arrivial time?
 
-    Priority Boost
+        Priority Boost
     - Time when of arrival
     - change the time every iteration
 
-
-
-In-Progress:
-    - kernel/proc.c: get_highest_priority 
+        - kernel/proc.c: get_highest_priority 
         - Get the highest priority of the processes in ptable
     - kernel/proc.c: update_wait
         - Update the wait ticks for the processes in ptable
 
-Done:
 
 Questions:
 
