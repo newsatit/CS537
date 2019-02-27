@@ -7,6 +7,8 @@
 #include "spinlock.h"
 #include "pstat.h"
 
+#define MAX_INT 1000000000
+
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
@@ -274,7 +276,7 @@ wait(void)
 // and Get the earliest runnable process that is in priority 0 
 void get_highest_pri(int *hi, int *earl) {
   *hi = 0;
-  *earl = (1<<31);
+  *earl = MAX_INT;
   struct proc *p;
    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
      if (p->state == RUNNABLE) {
@@ -283,7 +285,6 @@ void get_highest_pri(int *hi, int *earl) {
      }
   }
 }
-
 
 // Update the wait ticks for the processes in ptable
 // Also do periodic boosting
@@ -303,7 +304,6 @@ void update_wait() {
        }  
      }
   }
-  return;
 }
 
 // Per-CPU process scheduler.
@@ -331,21 +331,20 @@ scheduler(void)
     acquire(&ptable.lock);
     get_highest_pri(&highest_pri, &earliest_pos);
     for(p = ptable.proc; p < &ptable.proc[NPROC];){
-      
-      if(p->state != RUNNABLE || p->priority != highest_pri) {
+      if(p->state != RUNNABLE || p->priority != highest_pri || (p->priority == 0 && p->pos != earliest_pos)) {
         p++;
         continue;
       }
-        
-
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
       proc = p;
       switchuvm(p); // switch page table
       p->state = RUNNING;
+
         // increment wait time for runnable processes
       update_wait();
+
       swtch(&cpu->scheduler, proc->context); // switch to the kernel stack of the process
       switchkvm();
 
@@ -362,7 +361,8 @@ scheduler(void)
           pri--;
           p->wait_ticks[pri] = 0;
           p->priority = pri;
-          p->pos = pos_count;
+          if (pri == 0)
+            p->pos = pos_count++;
           // go to the next process
           p++;
       }
