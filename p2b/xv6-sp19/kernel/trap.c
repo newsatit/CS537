@@ -10,6 +10,7 @@
 // Interrupt descriptor table (shared by all CPUs).
 struct gatedesc idt[256];
 extern uint vectors[];  // in vectors.S: array of 256 entry pointers
+extern int voluntary_yield;
 struct spinlock tickslock;
 uint ticks;
 
@@ -100,6 +101,7 @@ trap(struct trapframe *tf)
   // Force process to give up CPU on clock tick.
   // If interrupts were on while locks held, would need to check nlock.
   if(proc && proc->state == RUNNING && tf->trapno == T_IRQ0+IRQ_TIMER) {
+    voluntary_yield = 0;
     yield();
   }
     

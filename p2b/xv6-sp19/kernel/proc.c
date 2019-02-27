@@ -16,6 +16,8 @@ struct {
 
 static struct proc *initproc;
 
+int voluntary_yield = 0;
+
 int nextpid = 1;
 extern void forkret(void);
 extern void trapret(void);
@@ -26,7 +28,7 @@ int getpinfo(struct pstat *pst) {
 
   for (int i = 0; i < NPROC; i++) {
     struct proc p = ptable.proc[i];
-    pst->inuse[i] = 1;
+    pst->inuse[i] = p.state == UNUSED ? 0 : 1;
     pst->pid[i] = p.pid;
     pst->priority[i] = p.priority;
     pst->state[NPROC] = p.state;
@@ -271,6 +273,20 @@ wait(void)
   }
 }
 
+// for debugging only
+void print() {
+    int j, l;
+    struct pstat st;
+    getpinfo(&st);
+    for (j = 0; j < NPROC; j++) {
+        if (st.inuse[j]) {
+            cprintf("\tmy pid : %d\n", st.pid[j]);
+            for (l = 3; l >= 0; l--) {
+               cprintf("\t\tlevel:%d \t ticks-used:%d\n", l, st.ticks[j][l]);
+            }
+        }
+    }
+}
 
 // Get the highest priority of the processes in ptable
 // and Get the earliest runnable process that is in priority 0 
@@ -296,6 +312,8 @@ void update_wait() {
        int pri = p->priority;
        p->wait_ticks[pri]++;
         if (pri < 3 && p->wait_ticks[pri] == max_wait[pri]) {
+          // cprintf("\n\tpid: %d promoted %d\n", p->pid, p->priority);
+          // print();
           // promoted
           pri++;
           p->wait_ticks[pri] = 0;
@@ -305,6 +323,8 @@ void update_wait() {
      }
   }
 }
+
+
 
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
@@ -322,6 +342,7 @@ scheduler(void)
   int highest_pri = 0;
   int earliest_pos = (1<<31);
   int pos_count = 0; // counter for the position in the priority 0 queue
+  voluntary_yield = 0;
 
   for(;;){
     // Enable interrupts on this processor.
@@ -335,6 +356,14 @@ scheduler(void)
         p++;
         continue;
       }
+
+      if (voluntary_yield) {
+        voluntary_yield = 0;
+        p++;
+        continue;
+      }
+      voluntary_yield = 1;
+
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
@@ -358,6 +387,9 @@ scheduler(void)
       // check if need to demote
       if (pri > 0 && ticks % time_slices[pri] == 0) {
           // demoted
+          // cprintf("\n\tpid: %d demoted %d\n", p->pid, p->priority);
+          // print();
+
           pri--;
           p->wait_ticks[pri] = 0;
           p->priority = pri;

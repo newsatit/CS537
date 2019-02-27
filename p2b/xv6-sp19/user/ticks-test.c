@@ -13,9 +13,14 @@ main(int argc, char *argv[])
         exit();
     }
 
+    int i, x, l, j;
+
+    for (i = 0; i < 2; i++) {
+        fork();
+    }
+
     printf(1, "tick-tests\n");
 
-    int i, x, l, j;
     int mypid = getpid();
 
     for(i = 1; i < atoi(argv[1]); i++){
