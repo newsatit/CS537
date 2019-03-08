@@ -1,0 +1,50 @@
+kernel/vm.c:  memmove(mem, init + (4*PGSIZE), sz);
+kernel/vm.c:    memmove(mem, (char*)pa, PGSIZE);
+kernel/vm.c:    memmove(pa0 + (va - va0), buf, n);
+kernel/console.c:    memmove(crt, crt+80, sizeof(crt[0])*23*80);
+kernel/defs.h:void*           memmove(void*, const void*, uint);
+kernel/fs.c:  memmove(sb, bp->data, sizeof(*sb));
+kernel/fs.c:  memmove(dip->addrs, ip->addrs, sizeof(ip->addrs));
+kernel/fs.c:    memmove(ip->addrs, dip->addrs, sizeof(ip->addrs));
+kernel/fs.c:    memmove(dst, bp->data + off%BSIZE, m);
+kernel/fs.c:    memmove(bp->data + off%BSIZE, src, m);
+kernel/fs.c:    memmove(name, s, DIRSIZ);
+kernel/fs.c:    memmove(name, s, len);
+kernel/main.c:  memmove(code, _binary_bootother_start, (uint)_binary_bootother_size);
+kernel/string.c:memmove(void *dst, const void *src, uint n)
+kernel/string.c:// memcpy exists to placate GCC.  Use memmove.
+kernel/string.c:  return memmove(dst, src, n);
+Binary file kernel/console.o matches
+Binary file kernel/fs.o matches
+Binary file kernel/main.o matches
+Binary file kernel/string.o matches
+Binary file kernel/vm.o matches
+Binary file kernel/kernel matches
+user/grep.c:      memmove(buf, p, m);
+user/ulib.c:memmove(void *vdst, void *vsrc, int n)
+user/user.h:void *memmove(void*, void*, int);
+user/ls.c:  memmove(buf, p, strlen(p));
+user/ls.c:      memmove(p, de.name, DIRSIZ);
+Binary file user/ulib.o matches
+Binary file user/bin/forktest matches
+Binary file user/grep.o matches
+Binary file user/ls.o matches
+tools/mkfs.c:  memmove(buf, &sb, sizeof(sb));
+Binary file xv6.img matches
+Binary file fs/cat matches
+Binary file fs/echo matches
+Binary file fs/forktest matches
+Binary file fs/grep matches
+Binary file fs/init matches
+Binary file fs/kill matches
+Binary file fs/ln matches
+Binary file fs/ls matches
+Binary file fs/mkdir matches
+Binary file fs/rm matches
+Binary file fs/sh matches
+Binary file fs/stressfs matches
+Binary file fs/tester matches
+Binary file fs/usertests matches
+Binary file fs/wc matches
+Binary file fs/zombie matches
+Binary file fs.img matches

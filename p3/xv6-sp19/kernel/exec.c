@@ -40,8 +40,14 @@ exec(char *path, char **argv)
       continue;
     if(ph.memsz < ph.filesz)
       goto bad;
+
+    cprintf("sz: %d va: %d memsz: %d\n",sz, ph.va,ph.memsz);
+
+    //Allocate some user space memory for my binary
     if((sz = allocuvm(pgdir, sz, ph.va + ph.memsz)) == 0)
       goto bad;
+
+    //Load my binary into address allocated above
     if(loaduvm(pgdir, (char*)ph.va, ip, ph.offset, ph.filesz) < 0)
       goto bad;
   }
