@@ -17,7 +17,11 @@
 int
 fetchint(struct proc *p, uint addr, int *ip)
 {
-  if(addr >= p->sz || addr+4 > p->sz)
+  if((addr >= p->sz && addr  < p->bs )|| 
+ ( addr + 4 > p->sz && addr + 4 <= p->bs) || 
+  addr >= USERTOP || addr + 4 > USERTOP || 
+  addr < USERBOT || addr + 4 <= USERBOT
+  )
     return -1;
   *ip = *(int*)(addr);
   return 0;
@@ -31,10 +35,13 @@ fetchstr(struct proc *p, uint addr, char **pp)
 {
   char *s, *ep;
 
-  if(addr >= p->sz)
+  if((addr >= p->sz && addr < p->bs )|| 
+  addr >= USERTOP || 
+  addr < USERBOT)
     return -1;
   *pp = (char*)addr;
-  ep = (char*)p->sz;
+  ep = (addr <= p->sz) ? (char*)p->sz : (char*)USERTOP;
+  // ep = (char*)USERTOP;
   for(s = *pp; s < ep; s++)
     if(*s == 0)
       return s - *pp;
@@ -58,7 +65,10 @@ argptr(int n, char **pp, int size)
   
   if(argint(n, &i) < 0)
     return -1;
-  if((uint)i >= proc->sz || (uint)i+size > proc->sz)
+  if(((uint)i >= proc->sz && (uint)i < proc->bs) || 
+    ((uint)i+size > proc->sz && (uint)(i+size) <= proc->bs) || 
+      (uint)i >= USERTOP || (uint)(i+size) > USERTOP ||
+      (uint)i < USERBOT || (uint)i + size <= USERBOT)
     return -1;
   *pp = (char*)i;
   return 0;

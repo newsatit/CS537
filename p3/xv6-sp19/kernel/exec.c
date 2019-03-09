@@ -31,7 +31,7 @@ exec(char *path, char **argv)
   if((pgdir = setupkvm()) == 0)
     goto bad;
 
-  // Load program into memory.
+  // Load program into memory, starting from 0x4000v
   sz = PGSIZE * 4;
   for(i=0, off=elf.phoff; i<elf.phnum; i++, off+=sizeof(ph)){
     if(readi(ip, (char*)&ph, off, sizeof(ph)) != sizeof(ph))
@@ -54,13 +54,16 @@ exec(char *path, char **argv)
   iunlockput(ip);
   ip = 0;
 
-  // Allocate a one-page stack at the next page boundary
+  // start of the heap segment
   sz = PGROUNDUP(sz);
-  if((sz = allocuvm(pgdir, sz, sz + PGSIZE)) == 0)
+
+  // Allocate one page stack at the USERTOP page
+  uint bs = USERTOP - PGSIZE;
+  if((allocuvm(pgdir, bs, bs + PGSIZE)) == 0)
     goto bad;
 
   // Push argument strings, prepare rest of stack in ustack.
-  sp = sz;
+  sp = USERTOP;
   for(argc = 0; argv[argc]; argc++) {
     if(argc >= MAXARG)
       goto bad;
@@ -90,6 +93,7 @@ exec(char *path, char **argv)
   oldpgdir = proc->pgdir;
   proc->pgdir = pgdir;
   proc->sz = sz;
+  proc->bs = bs;
   proc->tf->eip = elf.entry;  // main
   proc->tf->esp = sp;
   switchuvm(proc);
