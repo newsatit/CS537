@@ -83,6 +83,17 @@ trap(struct trapframe *tf)
               tf->trapno, cpu->id, tf->eip, rcr2());
       panic("trap");
     }
+
+    uint newbs = (int)PGROUNDDOWN(rcr2());
+    if (tf->trapno == T_PGFLT && newbs + PGSIZE == proc->bs && 
+    newbs >= PGROUNDUP(proc->sz) + 5 * PGSIZE) {
+      uint bs = proc->bs - PGSIZE;
+      if((allocuvm(proc->pgdir, bs, bs + PGSIZE)) == 0) {
+        cprintf("goto bad\n");
+      }
+      proc->bs = bs;
+      return;
+    }
     // In user space, assume process misbehaved.
     cprintf("pid %d %s: trap %d err %d on cpu %d "
             "eip 0x%x addr 0x%x--kill proc\n",

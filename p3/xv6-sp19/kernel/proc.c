@@ -110,6 +110,10 @@ growproc(int n)
   
   sz = proc->sz;
   if(n > 0){
+    
+    if ( proc->bs != 0 && (proc->bs < 5 * PGSIZE + PGROUNDUP(sz + n)) )
+      return -1;
+
     if((sz = allocuvm(proc->pgdir, sz, sz + n)) == 0)
       return -1;
   } else if(n < 0){
@@ -142,6 +146,7 @@ fork(void)
     return -1;
   }
   np->sz = proc->sz;
+  np->bs = proc->bs;
   np->parent = proc;
   *np->tf = *proc->tf;
 
