@@ -93,7 +93,10 @@ exec(char *path, char **argv)
   oldpgdir = proc->pgdir;
   proc->pgdir = pgdir;
   proc->sz = sz;
-  proc->cur_shm = (void*)(0x1000);
+  proc->cur_shm = (char*)(PGSIZE);
+  for (int i = 0; i < 3; i++) {
+      proc->shm[i] = (char*)(0);
+  }
   proc->bs = bs;
   proc->tf->eip = elf.entry;  // main
   proc->tf->esp = sp;

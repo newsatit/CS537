@@ -66,8 +66,8 @@ struct proc {
   uint sz;                     // Size of process memory (bytes)
   uint bs;                    // Bottom of stack
   pde_t* pgdir;                // Page table
-  void* shm[3];
-  void* cur_shm;
+  char* shm[3];
+  char* cur_shm;
   char *kstack;                // Bottom of kernel stack for this process
   enum procstate state;        // Process state
   volatile int pid;            // Process ID

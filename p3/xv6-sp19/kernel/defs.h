@@ -12,7 +12,7 @@ struct stat;
 
 void*           shmget(int);
 
-void*             mapshm(int, struct proc*);
+char*             mapshm(int, struct proc*);
 
 // bio.c
 void            binit(void);

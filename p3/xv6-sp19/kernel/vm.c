@@ -99,7 +99,7 @@ mappages(pde_t *pgdir, void *la, uint size, uint pa, int perm)
   return 0;
 }
 
-void* mapshm(int n, struct proc *proc) {
+char* mapshm(int n, struct proc *proc) {
   mappages(proc->pgdir, (char*)(proc->cur_shm), 
   PGSIZE, PADDR(shmpa[n]), PTE_W|PTE_U);
   proc->shm[n] = proc->cur_shm;

@@ -95,7 +95,10 @@ userinit(void)
     panic("userinit: out of memory?");
   inituvm(p->pgdir, _binary_initcode_start, (int)_binary_initcode_size);
   p->sz = 5*PGSIZE;
-  p->cur_shm = (void*)(PGSIZE);
+  p->cur_shm = (char*)(PGSIZE);
+  for (int i = 0; i < 3; i++) {
+    p->shm[i] = (char*)(0);
+  }
   memset(p->tf, 0, sizeof(*p->tf));
   p->tf->cs = (SEG_UCODE << 3) | DPL_USER;
   p->tf->ds = (SEG_UDATA << 3) | DPL_USER;
