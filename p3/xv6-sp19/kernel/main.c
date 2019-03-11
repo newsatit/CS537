@@ -37,6 +37,16 @@ jmpkstack(void)
   panic("jmpkstack");
 }
 
+static void initshm(void) {
+  for (int i = 0; i < 3; i++) {
+    shmpa[i] = kalloc();
+    if (shmpa[i] == 0) {
+      panic("Can't init shared pages");
+    }
+    memset(shmpa[i], 0, PGSIZE);
+  }
+}
+
 // Set up hardware and software.
 // Runs only on the boostrap processor.
 void
@@ -48,6 +58,7 @@ mainc(void)
   consoleinit();   // I/O devices & their interrupts
   uartinit();      // serial port
   kvmalloc();      // initialize the kernel page table
+  initshm();       // initializae share memory
   pinit();         // process table
   tvinit();        // trap vectors
   binit();         // buffer cache
@@ -64,6 +75,7 @@ mainc(void)
   userinit();      // first user process
   scheduler();     // start running processes
 }
+
 
 // common cpu init code
 static void

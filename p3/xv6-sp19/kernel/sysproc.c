@@ -6,6 +6,17 @@
 #include "proc.h"
 #include "sysfunc.h"
 
+
+int
+sys_shmget(void)
+{
+  int n;
+
+  if(argint(0, &n) < 0)
+    return -1;
+  return (int)shmget(n);
+}
+
 int
 sys_fork(void)
 {

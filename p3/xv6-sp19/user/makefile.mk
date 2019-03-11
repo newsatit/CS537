@@ -18,8 +18,7 @@ USER_PROGS := \
 	wc\
 	zombie\
 	null\
-	stack2
-
+	
 USER_PROGS := $(addprefix user/, $(USER_PROGS))
 
 # user library files

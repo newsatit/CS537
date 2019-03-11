@@ -10,6 +10,8 @@
 #define SEG_TSS   6  // this process's task state
 #define NSEGS     7
 
+char *shmpa[3];
+
 // Per-CPU state
 struct cpu {
   uchar id;                    // Local APIC ID; index into cpus[] below
@@ -64,6 +66,8 @@ struct proc {
   uint sz;                     // Size of process memory (bytes)
   uint bs;                    // Bottom of stack
   pde_t* pgdir;                // Page table
+  void* shm[3];
+  void* cur_shm;
   char *kstack;                // Bottom of kernel stack for this process
   enum procstate state;        // Process state
   volatile int pid;            // Process ID

@@ -10,6 +10,8 @@ extern char data[];  // defined in data.S
 
 static pde_t *kpgdir;  // for use in scheduler()
 
+
+
 // Allocate one page table for the machine for the kernel address
 // space for scheduler processes.
 void
@@ -95,6 +97,14 @@ mappages(pde_t *pgdir, void *la, uint size, uint pa, int perm)
     pa += PGSIZE;
   }
   return 0;
+}
+
+void* mapshm(int n, struct proc *proc) {
+  mappages(proc->pgdir, (char*)(proc->cur_shm), 
+  PGSIZE, PADDR(shmpa[n]), PTE_W|PTE_U);
+  proc->shm[n] = proc->cur_shm;
+  proc->cur_shm += PGSIZE;
+  return proc->shm[n];
 }
 
 // The mappings from logical to linear are one to one (i.e.,
@@ -286,7 +296,7 @@ freevm(pde_t *pgdir)
 
   if(pgdir == 0)
     panic("freevm: no pgdir");
-  deallocuvm(pgdir, USERTOP, 0);
+  deallocuvm(pgdir, USERTOP, USERBOT);
   for(i = 0; i < NPDENTRIES; i++){
     if(pgdir[i] & PTE_P)
       kfree((char*)PTE_ADDR(pgdir[i]));

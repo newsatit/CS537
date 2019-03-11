@@ -25,6 +25,16 @@ pinit(void)
   initlock(&ptable.lock, "ptable");
 }
 
+void* shmget(int n) {
+  if (n < 0 || n > 2) {
+    return NULL;
+  }
+  if (proc->shm[n] != NULL) 
+    return (void*)proc->shm[n];
+
+  return (void*)mapshm(n, proc);
+}
+
 // Look in the process table for an UNUSED proc.
 // If found, change state to EMBRYO and initialize
 // state required to run in the kernel.
@@ -85,6 +95,7 @@ userinit(void)
     panic("userinit: out of memory?");
   inituvm(p->pgdir, _binary_initcode_start, (int)_binary_initcode_size);
   p->sz = 5*PGSIZE;
+  p->cur_shm = (void*)(PGSIZE);
   memset(p->tf, 0, sizeof(*p->tf));
   p->tf->cs = (SEG_UCODE << 3) | DPL_USER;
   p->tf->ds = (SEG_UDATA << 3) | DPL_USER;
@@ -93,6 +104,7 @@ userinit(void)
   p->tf->eflags = FL_IF;
   p->tf->esp = 5*PGSIZE;
   p->tf->eip = 4*PGSIZE;  // beginning of initcode.S
+
 
   safestrcpy(p->name, "initcode", sizeof(p->name));
   p->cwd = namei("/");
@@ -147,6 +159,10 @@ fork(void)
   }
   np->sz = proc->sz;
   np->bs = proc->bs;
+  np->cur_shm = proc->cur_shm;
+  for (int i = 0; i < 3; i++) {
+    np->shm[i] = proc->shm[i];
+  }
   np->parent = proc;
   *np->tf = *proc->tf;
 

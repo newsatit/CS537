@@ -4,6 +4,7 @@
 struct stat;
 
 // system calls
+void* shmget(int);
 int fork(void);
 int exit(void) __attribute__((noreturn));
 int wait(void);

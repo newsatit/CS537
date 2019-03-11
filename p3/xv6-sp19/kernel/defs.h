@@ -10,6 +10,10 @@ struct proc;
 struct spinlock;
 struct stat;
 
+void*           shmget(int);
+
+void*             mapshm(int, struct proc*);
+
 // bio.c
 void            binit(void);
 struct buf*     bread(uint, uint);

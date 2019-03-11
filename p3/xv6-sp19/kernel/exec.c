@@ -41,7 +41,7 @@ exec(char *path, char **argv)
     if(ph.memsz < ph.filesz)
       goto bad;
 
-    cprintf("sz: %d va: %d memsz: %d\n",sz, ph.va,ph.memsz);
+    // cprintf("sz: %d va: %d memsz: %d\n",sz, ph.va,ph.memsz);
 
     //Allocate some user space memory for my binary
     if((sz = allocuvm(pgdir, sz, ph.va + ph.memsz)) == 0)
@@ -93,6 +93,7 @@ exec(char *path, char **argv)
   oldpgdir = proc->pgdir;
   proc->pgdir = pgdir;
   proc->sz = sz;
+  proc->cur_shm = (void*)(0x1000);
   proc->bs = bs;
   proc->tf->eip = elf.entry;  // main
   proc->tf->esp = sp;
