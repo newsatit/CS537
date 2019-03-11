@@ -89,7 +89,7 @@ trap(struct trapframe *tf)
     newbs >= PGROUNDUP(proc->sz) + 5 * PGSIZE) {
       uint bs = proc->bs - PGSIZE;
       if((allocuvm(proc->pgdir, bs, bs + PGSIZE)) == 0) {
-        cprintf("goto bad\n");
+        proc->killed = 1;
       }
       proc->bs = bs;
       return;

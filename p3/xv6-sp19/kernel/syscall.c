@@ -42,8 +42,8 @@ fetchstr(struct proc *p, uint addr, char **pp)
   (addr < USERBOT && addr >= (int)p->cur_shm))
     return -1;
   *pp = (char*)addr;
-  ep = (addr <= (int) p->cur_shm) ? (char*)p->cur_shm :
-  ((addr <= p->sz) ? (char*)p->sz : (char*)USERTOP);
+  ep = (addr < (int) p->cur_shm) ? (char*)p->cur_shm :
+  ((addr < p->sz) ? (char*)p->sz : (char*)USERTOP);
   // ep = (char*)USERTOP;
   for(s = *pp; s < ep; s++)
     if(*s == 0)
