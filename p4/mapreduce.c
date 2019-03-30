@@ -61,9 +61,8 @@ void MR_Emit(char *key, char *value) {
     // -- Getter function needs to return all values for a key in the reducer
     // -- When you start a reducer it needs to see all keys in partition in sorted order
     // -- For a particular key the values are also in sorted order
-    printf("emit\n");
+
     int part_num = part_func(key, num_partitions);
-    printf("part num %d\n", part_num);
     sem_wait(&partitions[part_num]->mutex);
     if(partitions[part_num]->cur_size >= partitions[part_num]->max_size){
         //expand array
@@ -78,7 +77,6 @@ void MR_Emit(char *key, char *value) {
     partitions[part_num]->cur_size++;
 
     sem_post(&partitions[part_num]->mutex);
-    printf("after \n");
 }
 /*
     char *files[];
@@ -89,7 +87,6 @@ void map_thread(void *arg) {
     int fi;
     // get available file
     while(1) {
-        printf("*\n");
         maparg_t *m = (maparg_t *) arg;
         
         sem_wait(&lock->mutex);
@@ -101,8 +98,14 @@ void map_thread(void *arg) {
         // Map file
         m->map(m->files[fi]);
     }
+}
 
-    printf("map thread finish!\n");
+int compare(pair_t *p1, pair_t *p2) {
+    if (strcmp(p1->key, p2->key) == 0) {
+        return strcmp(p1->value, p2->value);
+    } else {
+        return strcmp(p1->key, p2->key);
+    }
 }
 
 void reduce_thread(void *arg) {
@@ -114,6 +117,8 @@ void reduce_thread(void *arg) {
         printf("%s, %s\n", part->pairs[i]->key, part->pairs[i]->value);
     }
 }
+
+
 
 // arvgv here
 void MR_Run(int argc, char *argv[], Mapper map, int num_mappers, Reducer reduce, int num_reducers, Partitioner partition) {
@@ -143,7 +148,7 @@ void MR_Run(int argc, char *argv[], Mapper map, int num_mappers, Reducer reduce,
     //Map
     pthread_t* mappers; // Allocate this to make sure there are enough threads!
     mappers = (pthread_t*)malloc(sizeof(pthread_t) * num_mappers);
-
+    // TODO: change args to array of argument (malloc)
     for (int i = 0; i < num_mappers; i++) {
         maparg_t args;
         args.files = argv;
@@ -161,10 +166,12 @@ void MR_Run(int argc, char *argv[], Mapper map, int num_mappers, Reducer reduce,
 
     //reduce
     pthread_t* reducers;
+    // TODO: change args to array of argument (malloc)
     reducers = (pthread_t*)malloc(sizeof(pthread_t) * num_reducers);
     for (int i = 0; i < num_reducers; i++) {
         redarg_t args;
         args.partition_number = i;
+        printf("ppp %d\n", args.partition_number);
         pthread_create(&reducers[i], NULL, (void*)&reduce_thread, &args);
     }
     for (int i = 0; i < num_mappers; i++) {
