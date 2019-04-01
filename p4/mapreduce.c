@@ -114,7 +114,7 @@ void reduce_thread(void *arg) {
     printf("partition number : %d\n", part_num);
     p_lock_t* part = partitions[part_num];  
     for (int i = 0; i < part-> cur_size; i++) {
-        printf("%s, %s\n", part->pairs[i]->key, part->pairs[i]->value);
+        printf("reducing key: %s, value: %s\n", part->pairs[i]->key, part->pairs[i]->value);
     }
 }
 
@@ -157,12 +157,11 @@ void MR_Run(int argc, char *argv[], Mapper map, int num_mappers, Reducer reduce,
         pthread_create(&mappers[i], NULL, (void*)&map_thread, &args);
     }
 
-    if (mappers != NULL) 
-        free(mappers);
-
     for (int i = 0; i < num_mappers; i++) {
         pthread_join(mappers[i], NULL);
     }
+    if (mappers != NULL) 
+        free(mappers);
 
     //reduce
     pthread_t* reducers;
@@ -171,7 +170,6 @@ void MR_Run(int argc, char *argv[], Mapper map, int num_mappers, Reducer reduce,
     for (int i = 0; i < num_reducers; i++) {
         redarg_t args;
         args.partition_number = i;
-        printf("ppp %d\n", args.partition_number);
         pthread_create(&reducers[i], NULL, (void*)&reduce_thread, &args);
     }
     for (int i = 0; i < num_mappers; i++) {
@@ -186,6 +184,7 @@ void MR_Run(int argc, char *argv[], Mapper map, int num_mappers, Reducer reduce,
             free(partitions[i]->pairs[j]->value);         
         }
         free(partitions[i]->pairs);
+        free(partitions[i]);
     }    
     if (partitions != NULL)
         free(partitions);
