@@ -148,7 +148,7 @@ void MR_Run(int argc, char *argv[], Mapper map, int num_mappers, Reducer reduce,
     //Map
     pthread_t* mappers; // Allocate this to make sure there are enough threads!
     mappers = (pthread_t*)malloc(sizeof(pthread_t) * num_mappers);
-    maparg_t* args = malloc(sizeof(maparg_t)*num_mappers);
+    maparg_t* args = (maparg_t*)malloc(sizeof(maparg_t)*num_mappers);
     for (int i = 0; i < num_mappers; i++) {
         args[i]->files = argv;
         args[i]->num_files = num_files;
@@ -169,7 +169,7 @@ void MR_Run(int argc, char *argv[], Mapper map, int num_mappers, Reducer reduce,
     pthread_t* reducers;
     // TODO: change args to array of argument (malloc)
     reducers = (pthread_t*)malloc(sizeof(pthread_t) * num_reducers);
-    redarg_t* args = malloc(sizeof(redarg_t)* num_reducers);
+    redarg_t* args = (redarg_t*)malloc(sizeof(redarg_t)* num_reducers);
     for (int i = 0; i < num_reducers; i++) {
         args[i].partition_number = i;
         printf("ppp %d\n", args.partition_number);
