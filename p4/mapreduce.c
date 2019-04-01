@@ -148,17 +148,18 @@ void MR_Run(int argc, char *argv[], Mapper map, int num_mappers, Reducer reduce,
     //Map
     pthread_t* mappers; // Allocate this to make sure there are enough threads!
     mappers = (pthread_t*)malloc(sizeof(pthread_t) * num_mappers);
-    // TODO: change args to array of argument (malloc)
+    maparg_t* args = malloc(sizeof(maparg_t)*num_mappers);
     for (int i = 0; i < num_mappers; i++) {
-        maparg_t args;
-        args.files = argv;
-        args.num_files = num_files;
-        args.map = map;
-        pthread_create(&mappers[i], NULL, (void*)&map_thread, &args);
+        args[i]->files = argv;
+        args[i]->num_files = num_files;
+        args[i]->map = map;
+        pthread_create(&mappers[i], NULL, (void*)&map_thread, &args[i]);
     }
 
     if (mappers != NULL) 
         free(mappers);
+    if (args != NULL) 
+        free(args);
 
     for (int i = 0; i < num_mappers; i++) {
         pthread_join(mappers[i], NULL);
@@ -168,17 +169,19 @@ void MR_Run(int argc, char *argv[], Mapper map, int num_mappers, Reducer reduce,
     pthread_t* reducers;
     // TODO: change args to array of argument (malloc)
     reducers = (pthread_t*)malloc(sizeof(pthread_t) * num_reducers);
+    redarg_t* args = malloc(sizeof(redarg_t)* num_reducers);
     for (int i = 0; i < num_reducers; i++) {
-        redarg_t args;
-        args.partition_number = i;
+        args[i].partition_number = i;
         printf("ppp %d\n", args.partition_number);
-        pthread_create(&reducers[i], NULL, (void*)&reduce_thread, &args);
+        pthread_create(&reducers[i], NULL, (void*)&reduce_thread, &args[i]);
     }
     for (int i = 0; i < num_mappers; i++) {
         pthread_join(reducers[i], NULL);
     }
     if (reducers != NULL)
         free(reducers);
+    if (args != NULL)
+        free(args);
 
     for(int i = 0; i < num_partitions; i++){
         for (int j = 0; j < partitions[i]->cur_size; j++) {
