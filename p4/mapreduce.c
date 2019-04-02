@@ -17,7 +17,7 @@ typedef struct __key_pos_t{
 
 typedef struct __p_lock_t{
     sem_t mutex;
-    pair_t **pairs;
+    pair_t *pairs;
     int max_size;
     int cur_size;
     key_pos_t *key_pos;
@@ -76,13 +76,12 @@ void MR_Emit(char *key, char *value) {
     if(partitions[part_num]->cur_size >= partitions[part_num]->max_size){
         //expand array
         partitions[part_num]->max_size*= 2;
-        partitions[part_num]->pairs = (pair_t**)realloc(partitions[part_num]->pairs, sizeof(pair_t*) * partitions[part_num]->max_size);
+        partitions[part_num]->pairs = (pair_t*)realloc(partitions[part_num]->pairs, sizeof(pair_t) * partitions[part_num]->max_size);
     }
-    partitions[part_num]->pairs[partitions[part_num]->cur_size] = (pair_t*)malloc(sizeof(pair_t));
-    partitions[part_num]->pairs[partitions[part_num]->cur_size]->key = (char *)malloc(sizeof(char) * (strlen(key) + 1));
-    strcpy(partitions[part_num]->pairs[partitions[part_num]->cur_size]->key,key);
-    partitions[part_num]->pairs[partitions[part_num]->cur_size]->value = (char *)malloc(sizeof(char) * (strlen(value)+1));
-    strcpy(partitions[part_num]->pairs[partitions[part_num]->cur_size]->value, value);
+    partitions[part_num]->pairs[partitions[part_num]->cur_size].key = (char *)malloc(sizeof(char) * (strlen(key) + 1));
+    strcpy(partitions[part_num]->pairs[partitions[part_num]->cur_size].key,key);
+    partitions[part_num]->pairs[partitions[part_num]->cur_size].value = (char *)malloc(sizeof(char) * (strlen(value)+1));
+    strcpy(partitions[part_num]->pairs[partitions[part_num]->cur_size].value, value);
     partitions[part_num]->cur_size++;
 
     sem_post(&partitions[part_num]->mutex);
@@ -110,13 +109,13 @@ void map_thread(void *arg) {
 }
 
 int comparator(const void *pv1, const void *pv2) {
-    pair_t *p1 = *(pair_t **)(pv1);
-    pair_t *p2 = *(pair_t **)(pv2);
-    if (strcmp(p1->key, p2->key) == 0) {
+    pair_t p1 = *(pair_t *)(pv1);
+    pair_t p2 = *(pair_t *)(pv2);
+    if (strcmp(p1.key, p2.key) == 0) {
         
-        return strcmp(p1->value, p2->value);
+        return strcmp(p1.value, p2.value);
     } else {
-        return strcmp(p1->key, p2->key);
+        return strcmp(p1.key, p2.key);
     }
 }
 
@@ -135,10 +134,10 @@ int comparator(const void *pv1, const void *pv2) {
             //if (part->pairs[index] == NULL) {
             //    return NULL;
             //}
-	    if (index >= part->cur_size)
-		    return NULL;
-            if (!strcmp(part->pairs[index]->key, key)) {
-                char *ret_val = part->pairs[index]->value;
+            if (index >= part->cur_size)
+                return NULL;
+            if (!strcmp(part->pairs[index].key, key)) {
+                char *ret_val = part->pairs[index].value;
                 part->key_pos[i].cur++;
                 return ret_val;;
             } else {
@@ -184,7 +183,7 @@ void reduce_thread(void *arg) {
     //     printf("(%d)reducing key: %s, value: %s\n", part_num, part->pairs[i]->key, part->pairs[i]->value);
     // }
     // printf("\n\n");
-    qsort((void*)part->pairs, part->cur_size, sizeof(pair_t*), comparator);
+    qsort((void*)part->pairs, part->cur_size, sizeof(pair_t), comparator);
     // for (int i = 0; i < part->cur_size; i++) {
     //     printf("(%d)reducing key: %s, value: %s\n", part_num, part->pairs[i]->key, part->pairs[i]->value);
     // }
@@ -192,21 +191,21 @@ void reduce_thread(void *arg) {
     if (part->cur_size > 0) {
         int num_keys = 1;
         for (int i = 0; i < part->cur_size - 1; i++) {
-            if (strcmp(part->pairs[i]->key, part->pairs[i + 1]->key) != 0) {
+            if (strcmp(part->pairs[i].key, part->pairs[i + 1].key) != 0) {
                 num_keys++;
             }
         }
 
         part->key_pos = (key_pos_t*)malloc(sizeof(key_pos_t) * num_keys);
         part->key_pos[0].cur = 0;
-        part->key_pos[0].key = part->pairs[0]->key;
+        part->key_pos[0].key = part->pairs[0].key;
 
         part->key_count = 1;
 
         for (int i = 1; i < part->cur_size ; i++) {
-            if (strcmp(part->pairs[i - 1]->key, part->pairs[i]->key) != 0) {
+            if (strcmp(part->pairs[i - 1].key, part->pairs[i].key) != 0) {
                 part->key_pos[part->key_count].cur = i;
-                part->key_pos[part->key_count].key = part->pairs[i]->key;
+                part->key_pos[part->key_count].key = part->pairs[i].key;
                 part->key_count++;
             }
         }
@@ -245,7 +244,7 @@ void MR_Run(int argc, char *argv[], Mapper map, int num_mappers, Reducer reduce,
         partitions[i] = (p_lock_t*)malloc(sizeof(p_lock_t));
         partitions[i]->max_size = 1;
         partitions[i]->cur_size = 0;
-        partitions[i]->pairs = (pair_t**)malloc(sizeof(pair_t*)*partitions[i]->max_size);
+        partitions[i]->pairs = (pair_t*)malloc(sizeof(pair_t)*partitions[i]->max_size);
         sem_init(&partitions[i]->mutex, 0, 1);
     }
 
@@ -288,9 +287,8 @@ void MR_Run(int argc, char *argv[], Mapper map, int num_mappers, Reducer reduce,
 
     for(int i = 0; i < num_partitions; i++){
         for (int j = 0; j < partitions[i]->cur_size; j++) {
-            free(partitions[i]->pairs[j]->key);
-            free(partitions[i]->pairs[j]->value);
-		free(partitions[i]->pairs[j]);	    
+            free(partitions[i]->pairs[j].key);
+            free(partitions[i]->pairs[j].value);   
         }
         free(partitions[i]->pairs);
         free(partitions[i]);
