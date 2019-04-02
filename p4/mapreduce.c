@@ -9,11 +9,19 @@ typedef struct __pair_t{
     char *key;
     char *value;
 } pair_t;
+
+typedef struct __key_pos_t{
+    char *key; 
+    int cur;
+} key_pos_t;
+
 typedef struct __p_lock_t{
     sem_t mutex;
     pair_t **pairs;
     int max_size;
     int cur_size;
+    key_pos_t *key_pos;
+    int key_count;
 } p_lock_t;
 
 typedef struct __lock_t{
@@ -32,6 +40,7 @@ typedef struct __redarg_t{
 } redarg_t;
 
 Partitioner part_func;
+Reducer reduce_func;
 int num_partitions;
 p_lock_t **partitions;
 
@@ -100,22 +109,86 @@ void map_thread(void *arg) {
     }
 }
 
-int compare(pair_t *p1, pair_t *p2) {
+int comparator(const void *pv1, const void *pv2) {
+    pair_t *p1 = *(pair_t **)(pv1);
+    pair_t *p2 = *(pair_t **)(pv2);
     if (strcmp(p1->key, p2->key) == 0) {
+        
         return strcmp(p1->value, p2->value);
     } else {
         return strcmp(p1->key, p2->key);
     }
 }
 
+ char* get_next(char *key, int partition_number) {
+     p_lock_t* part = partitions[partition_number];
+     int i;
+     for (i = 0; i < part->key_count; i++) {
+         if(!strcmp(key, part->key_pos[i].key)) {
+            int index = part->key_pos[i].cur;  
+            if (part->pairs[index] == NULL) {
+                return NULL;
+            }
+            if (!strcmp(part->pairs[index]->key, key)) {
+                char *ret_val = part->pairs[index]->value;
+                part->key_pos[i].cur++;
+                return ret_val;;
+            } else {
+                return NULL;
+            }
+         }
+     }
+    return NULL;
+     
+ }
+
+
+
 void reduce_thread(void *arg) {
+    sem_wait(&lock->mutex);
     redarg_t *r = (redarg_t*) arg;
     int part_num = r->partition_number;
-    printf("partition number : %d\n", part_num);
+    // printf("partition number : %d\n", part_num);
     p_lock_t* part = partitions[part_num];  
-    for (int i = 0; i < part-> cur_size; i++) {
-        printf("reducing key: %s, value: %s\n", part->pairs[i]->key, part->pairs[i]->value);
+    // for (int i = 0; i < part->cur_size; i++) {
+    //     printf("(%d)reducing key: %s, value: %s\n", part_num, part->pairs[i]->key, part->pairs[i]->value);
+    // }
+    // printf("\n\n");
+    qsort((void*)part->pairs, part->cur_size, sizeof(pair_t*), comparator);
+    // for (int i = 0; i < part->cur_size; i++) {
+    //     printf("(%d)reducing key: %s, value: %s\n", part_num, part->pairs[i]->key, part->pairs[i]->value);
+    // }
+    part->key_count = 0;
+    if (part->cur_size > 0) {
+        int num_keys = 1;
+        for (int i = 0; i < part->cur_size - 1; i++) {
+            if (strcmp(part->pairs[i]->key, part->pairs[i + 1]->key) != 0) {
+                num_keys++;
+            }
+        }
+
+        part->key_pos = (key_pos_t*)malloc(sizeof(key_pos_t) * num_keys);
+        part->key_pos[0].cur = 0;
+        part->key_pos[0].key = part->pairs[0]->key;
+
+        part->key_count = 1;
+
+        for (int i = 1; i < part->cur_size ; i++) {
+            if (strcmp(part->pairs[i - 1]->key, part->pairs[i]->key) != 0) {
+                part->key_pos[part->key_count].cur = i;
+                part->key_pos[part->key_count].key = part->pairs[i]->key;
+                part->key_count++;
+            }
+        }
+        for (int i = 0; i < part->key_count; i++) {
+            reduce_func(part->key_pos[i].key, get_next, part_num);
+        }
+
+        if (part->key_pos != NULL) {
+            free(part->key_pos);
+        }
     }
+    sem_post(&lock->mutex);
 }
 
 
@@ -135,6 +208,7 @@ void MR_Run(int argc, char *argv[], Mapper map, int num_mappers, Reducer reduce,
     sem_init(&lock->mutex, 0, 1);
     lock->f = 1;
     part_func = partition;
+    reduce_func = reduce;
     num_partitions = num_reducers;
     partitions = (p_lock_t**)malloc(sizeof(p_lock_t*) * num_reducers);
     for(int i = 0; i < num_partitions; i++){
@@ -155,12 +229,12 @@ void MR_Run(int argc, char *argv[], Mapper map, int num_mappers, Reducer reduce,
         argsm[i].map = map;
         pthread_create(&mappers[i], NULL, (void*)&map_thread, &argsm[i]);
     }
-    if (argsm != NULL) 
-        free(argsm);
 
     for (int i = 0; i < num_mappers; i++) {
         pthread_join(mappers[i], NULL);
-    }
+    }    
+    if (argsm != NULL) 
+        free(argsm);
     if (mappers != NULL) 
         free(mappers);
 
@@ -174,13 +248,14 @@ void MR_Run(int argc, char *argv[], Mapper map, int num_mappers, Reducer reduce,
         // printf("ppp %d\n", argsr[i].partition_number);
         pthread_create(&reducers[i], NULL, (void*)&reduce_thread, &argsr[i]);
     }
-    for (int i = 0; i < num_mappers; i++) {
+    for (int i = 0; i < num_reducers; i++) {
         pthread_join(reducers[i], NULL);
-    }
-    if (reducers != NULL)
-        free(reducers);
+    }    
     if (argsr != NULL)
         free(argsr);
+    if (reducers != NULL)
+        free(reducers);
+
 
     for(int i = 0; i < num_partitions; i++){
         for (int j = 0; j < partitions[i]->cur_size; j++) {
