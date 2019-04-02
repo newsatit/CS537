@@ -41,6 +41,7 @@ typedef struct __redarg_t{
 
 Partitioner part_func;
 Reducer reduce_func;
+Mapper map_func;
 int num_partitions;
 p_lock_t **partitions;
 
@@ -105,7 +106,7 @@ void map_thread(void *arg) {
         if (fi > m->num_files) break; 
         
         // Map file
-        m->map(m->files[fi]);
+        map_func(m->files[fi]);
     }
 }
 
@@ -122,9 +123,15 @@ int comparator(const void *pv1, const void *pv2) {
 
  char* get_next(char *key, int partition_number) {
      p_lock_t* part = partitions[partition_number];
-     int i;
-     for (i = 0; i < part->key_count; i++) {
-         if(!strcmp(key, part->key_pos[i].key)) {
+
+    int l = 0;
+    int r = part->key_count - 1;
+
+    while (l <= r) {
+        int i = (l + r)/2;
+        
+        int cmp_result = strcmp(key, part->key_pos[i].key);
+        if (cmp_result == 0) {
             int index = part->key_pos[i].cur;  
             if (part->pairs[index] == NULL) {
                 return NULL;
@@ -136,9 +143,32 @@ int comparator(const void *pv1, const void *pv2) {
             } else {
                 return NULL;
             }
-         }
-     }
+        } else if (cmp_result < 0) {
+            r = i - 1;
+        } else {
+            l = i + 1;
+        }
+
+    }
     return NULL;
+
+
+    //  for (i = 0; i < part->key_count; i++) {
+    //      if(!strcmp(key, part->key_pos[i].key)) {
+    //         int index = part->key_pos[i].cur;  
+    //         if (part->pairs[index] == NULL) {
+    //             return NULL;
+    //         }
+    //         if (!strcmp(part->pairs[index]->key, key)) {
+    //             char *ret_val = part->pairs[index]->value;
+    //             part->key_pos[i].cur++;
+    //             return ret_val;;
+    //         } else {
+    //             return NULL;
+    //         }
+    //      }
+    //  }
+    // return NULL;
      
  }
 
@@ -209,6 +239,7 @@ void MR_Run(int argc, char *argv[], Mapper map, int num_mappers, Reducer reduce,
     lock->f = 1;
     part_func = partition;
     reduce_func = reduce;
+    map_func = map;
     num_partitions = num_reducers;
     partitions = (p_lock_t**)malloc(sizeof(p_lock_t*) * num_reducers);
     for(int i = 0; i < num_partitions; i++){
@@ -226,7 +257,6 @@ void MR_Run(int argc, char *argv[], Mapper map, int num_mappers, Reducer reduce,
     for (int i = 0; i < num_mappers; i++) {
         argsm[i].files = argv;
         argsm[i].num_files = num_files;
-        argsm[i].map = map;
         pthread_create(&mappers[i], NULL, (void*)&map_thread, &argsm[i]);
     }
 
