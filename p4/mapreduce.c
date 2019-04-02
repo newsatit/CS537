@@ -57,7 +57,6 @@ unsigned long MR_DefaultHashPartition(char *key, int num_partitions) {
 
 
 void MR_Emit(char *key, char *value) {
-
     // Implement MR_Emit here
     // you need to have some data structure that is going to store intermediate values
     // You can assume that intermediate data fits into memory
@@ -80,9 +79,9 @@ void MR_Emit(char *key, char *value) {
         partitions[part_num]->pairs = (pair_t**)realloc(partitions[part_num]->pairs, sizeof(pair_t*) * partitions[part_num]->max_size);
     }
     partitions[part_num]->pairs[partitions[part_num]->cur_size] = (pair_t*)malloc(sizeof(pair_t));
-    partitions[part_num]->pairs[partitions[part_num]->cur_size]->key = (char *)malloc(sizeof(key));
+    partitions[part_num]->pairs[partitions[part_num]->cur_size]->key = (char *)malloc(sizeof(char) * (strlen(key) + 1));
     strcpy(partitions[part_num]->pairs[partitions[part_num]->cur_size]->key,key);
-    partitions[part_num]->pairs[partitions[part_num]->cur_size]->value = (char *)malloc(sizeof(value));
+    partitions[part_num]->pairs[partitions[part_num]->cur_size]->value = (char *)malloc(sizeof(char) * (strlen(value)+1));
     strcpy(partitions[part_num]->pairs[partitions[part_num]->cur_size]->value, value);
     partitions[part_num]->cur_size++;
 
@@ -133,9 +132,11 @@ int comparator(const void *pv1, const void *pv2) {
         int cmp_result = strcmp(key, part->key_pos[i].key);
         if (cmp_result == 0) {
             int index = part->key_pos[i].cur;  
-            if (part->pairs[index] == NULL) {
-                return NULL;
-            }
+            //if (part->pairs[index] == NULL) {
+            //    return NULL;
+            //}
+	    if (index >= part->cur_size)
+		    return NULL;
             if (!strcmp(part->pairs[index]->key, key)) {
                 char *ret_val = part->pairs[index]->value;
                 part->key_pos[i].cur++;
@@ -175,7 +176,6 @@ int comparator(const void *pv1, const void *pv2) {
 
 
 void reduce_thread(void *arg) {
-    sem_wait(&lock->mutex);
     redarg_t *r = (redarg_t*) arg;
     int part_num = r->partition_number;
     // printf("partition number : %d\n", part_num);
@@ -218,7 +218,6 @@ void reduce_thread(void *arg) {
             free(part->key_pos);
         }
     }
-    sem_post(&lock->mutex);
 }
 
 
@@ -290,7 +289,8 @@ void MR_Run(int argc, char *argv[], Mapper map, int num_mappers, Reducer reduce,
     for(int i = 0; i < num_partitions; i++){
         for (int j = 0; j < partitions[i]->cur_size; j++) {
             free(partitions[i]->pairs[j]->key);
-            free(partitions[i]->pairs[j]->value);         
+            free(partitions[i]->pairs[j]->value);
+		free(partitions[i]->pairs[j]);	    
         }
         free(partitions[i]->pairs);
         free(partitions[i]);
