@@ -162,6 +162,8 @@ fork(void)
 //copied from fork
 //unlike fork, cloned object share the same heap, address space with its parent
 //and have its own stack
+
+// clone() returns the 
 int
 clone(void(*fcn) (void *, void *), void *arg1, void *arg2, void *stack)
 { 
@@ -174,7 +176,6 @@ clone(void(*fcn) (void *, void *), void *arg1, void *arg2, void *stack)
     return -1;
 
   // Copy process state from p.
-  // we want to have them share the same page table
   // if((np->pgdir = copyuvm(proc->pgdir, proc->sz)) == 0){
   //   kfree(np->kstack);
   //   np->kstack = 0;
@@ -184,8 +185,8 @@ clone(void(*fcn) (void *, void *), void *arg1, void *arg2, void *stack)
   
   //assign the same pagetable to the child process
   np->pgdir = proc->pgdir;
-  np->kstack = 0;//have to be changed to stack pointer argument pass to the clone() function
-  np->state = UNUSED;
+  // np->kstack = 0;//have to be changed to stack pointer argument pass to the clone() function
+  // np->state = UNUSED;
 
   np->sz = proc->sz;
   np->parent = proc;
@@ -194,7 +195,18 @@ clone(void(*fcn) (void *, void *), void *arg1, void *arg2, void *stack)
   
 
   // Clear %eax so that fork returns 0 in the child.
-  np->tf->eax = 0;
+  np->tf->eax = np->pid;
+
+  np->tf->eip = (int)fcn;
+  // np->tf->ebp = stack;//have to be changed to point to the base of the stack frame
+  np->tf->esp = (int)stack + PGSIZE - 16;
+  np->tf->ebp = (int)stack + PGSIZE - 16;
+
+  int ret_addr = 0xffffffff;
+  copyout(np->pgdir, np->tf->ebp + 4, &ret_addr, sizeof(int));
+  copyout(np->pgdir, np->tf->ebp + 8, arg1, sizeof(void*));
+  copyout(np->pgdir, np->tf->ebp + 12, arg2, sizeof(void*));
+
 
   for(i = 0; i < NOFILE; i++)
     if(proc->ofile[i])
@@ -204,9 +216,6 @@ clone(void(*fcn) (void *, void *), void *arg1, void *arg2, void *stack)
   pid = np->pid;
   np->state = RUNNABLE;
   safestrcpy(np->name, proc->name, sizeof(proc->name));
-
-  //TODO: pass arguments that clone function got to the newly created thread
-  //argument that are passed to this thread: void* func, void* arg1, void* arg2, void* stack
 
   return pid;
 }

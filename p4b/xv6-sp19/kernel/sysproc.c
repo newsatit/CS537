@@ -9,13 +9,24 @@
 int
 sys_clone(void)
 {
-  return clone();
+
+  char *fcn;
+  char *arg1;
+  char *arg2;
+  char *stack;
+
+  if(argptr(0, &fcn, 4) < 0 || argptr(1, &arg1, 4) < 0 || argptr(2, &arg2, 4) < 0 || argptr(3, &stack, 4) < 0)
+    return -1;
+  return clone((void*)fcn, (void*)arg1, (void*)arg2, (void*)stack);
 }
 
 int
 sys_join(void)
 {
-  return join();
+  char *stack;
+  if(argptr(0, &stack, 4) < 0) 
+    return -1; 
+  return join((void**)stack);
 }
 
 int

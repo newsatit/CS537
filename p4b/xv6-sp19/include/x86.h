@@ -179,14 +179,14 @@ rcr3(void)
 // hardware and by trapasm.S, and passed to trap().
 struct trapframe {
   // registers as pushed by pusha
-  uint edi;
-  uint esi;
-  uint ebp;
+  uint edi; // destination index register
+  uint esi; // source index register
+  uint ebp; // stack base pointer register; used to access parameters of a function; 8(%ebp),12(%ebp),16(%ebp),... *****
   uint oesp;      // useless & ignored
-  uint ebx;
-  uint edx;
-  uint ecx;
-  uint eax;
+  uint ebx; // base register; used as base pointer for memory access
+  uint edx; // data register
+  uint ecx; // counter register; used as loop counter
+  uint eax; // accumulator register; contains the return value of the function *****************************************
 
   // rest of trap frame
   ushort gs;
@@ -201,13 +201,13 @@ struct trapframe {
 
   // below here defined by x86 hardware
   uint err;
-  uint eip;
+  uint eip; // index pointer; holds the offset to the next instruction **************************************************
   ushort cs;
   ushort padding5;
   uint eflags;
 
   // below here only when crossing rings, such as from user to kernel
-  uint esp;
+  uint esp; // stack pointer register;  *********************************************************************************
   ushort ss;
   ushort padding6;
 };
