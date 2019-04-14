@@ -160,6 +160,8 @@ fork(void)
 }
 
 //copied from fork
+//unlike fork, cloned object share the same heap, address space with its parent
+//and have its own stack
 int
 clone(void)
 { 
@@ -172,15 +174,24 @@ clone(void)
     return -1;
 
   // Copy process state from p.
-  if((np->pgdir = copyuvm(proc->pgdir, proc->sz)) == 0){
-    kfree(np->kstack);
-    np->kstack = 0;
-    np->state = UNUSED;
-    return -1;
-  }
+  // we want to have them share the same page table
+  // if((np->pgdir = copyuvm(proc->pgdir, proc->sz)) == 0){
+  //   kfree(np->kstack);
+  //   np->kstack = 0;
+  //   np->state = UNUSED;
+  //   return -1;
+  // }
+  
+  //assign the same pagetable to the child process
+  np->pgdir = proc->pgdir;
+  np->kstack = 0;//have to be changed to stack pointer argument pass to the clone() function
+  np->state = UNUSED;
+
   np->sz = proc->sz;
   np->parent = proc;
   *np->tf = *proc->tf;
+
+  
 
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
@@ -193,6 +204,10 @@ clone(void)
   pid = np->pid;
   np->state = RUNNABLE;
   safestrcpy(np->name, proc->name, sizeof(proc->name));
+
+  //TODO: pass arguments that clone function got to the newly created thread
+  //argument that are passed to this thread: void* func, void* arg1, void* arg2, void* stack
+
   return pid;
 }
 
