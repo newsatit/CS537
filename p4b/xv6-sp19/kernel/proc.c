@@ -200,12 +200,15 @@ clone(void(*fcn) (void *, void *), void *arg1, void *arg2, void *stack)
   np->tf->eip = (int)fcn;
   // np->tf->ebp = stack;//have to be changed to point to the base of the stack frame
   np->tf->esp = (int)stack + PGSIZE - 16;
+  // int old_ebp = np->tf->ebp;
   np->tf->ebp = (int)stack + PGSIZE - 16;
 
   int ret_addr = 0xffffffff;
+  // copyout(np->pgdir, np->tf->ebp, &old_ebp, sizeof(int));
   copyout(np->pgdir, np->tf->ebp + 4, &ret_addr, sizeof(int));
   copyout(np->pgdir, np->tf->ebp + 8, arg1, sizeof(void*));
   copyout(np->pgdir, np->tf->ebp + 12, arg2, sizeof(void*));
+  
 
 
   for(i = 0; i < NOFILE; i++)
@@ -224,8 +227,42 @@ clone(void(*fcn) (void *, void *), void *arg1, void *arg2, void *stack)
 int
 join(void **stack)
 {
-  cprintf("join() is called\n");
-  return 1;
+  struct proc *p;
+  int havekids, pid;
+
+  acquire(&ptable.lock);
+  for(;;){
+    // Scan through table looking for zombie children.
+    havekids = 0;
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if(p->parent != proc) // || p->tf->esp != (int)*stack)
+        continue;
+      havekids = 1;
+      if(p->state == ZOMBIE){
+        // Found one.
+        pid = p->pid;
+        kfree(p->kstack);
+        p->kstack = 0;
+        freevm(p->pgdir);
+        p->state = UNUSED;
+        p->pid = 0;
+        p->parent = 0;
+        p->name[0] = 0;
+        p->killed = 0;
+        release(&ptable.lock);
+        return pid;
+      }
+    }
+
+    // No point waiting if we don't have any children.
+    if(!havekids || proc->killed){
+      release(&ptable.lock);
+      return -1;
+    }
+
+    // Wait for children to exit.  (See wakeup1 call in proc_exit.)
+    sleep(proc, &ptable.lock);  //DOC: wait-sleep
+  }
 }
 
 // Exit the current process.  Does not return.
