@@ -163,7 +163,7 @@ fork(void)
 //unlike fork, cloned object share the same heap, address space with its parent
 //and have its own stack
 int
-clone(void)
+clone(void(*fcn) (void *, void *), void *arg1, void *arg2, void *stack)
 { 
   cprintf("clone() is called\n");
   int i, pid;
@@ -213,7 +213,7 @@ clone(void)
 
 //read how wait works
 int
-join(void)
+join(void **stack)
 {
   cprintf("join() is called\n");
   return 1;
