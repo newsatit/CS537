@@ -171,6 +171,9 @@ clone(void(*fcn) (void *, void *), void *arg1, void *arg2, void *stack)
   int i, pid;
   struct proc *np;
 
+  if ((uint)stack % PGSIZE != 0 || (uint)stack + PGSIZE > proc->sz || (uint)fcn > proc->sz)
+    return -1;
+
   // Allocate process.
   if((np = allocproc()) == 0)
     return -1;
@@ -198,18 +201,24 @@ clone(void(*fcn) (void *, void *), void *arg1, void *arg2, void *stack)
   np->tf->eax = np->pid;
 
   np->tf->eip = (int)fcn;
+  np->tf->ebp = 0;
   // np->tf->ebp = stack;//have to be changed to point to the base of the stack frame
-  np->tf->esp = (int)stack + PGSIZE - 16;
+  // np->tf->esp = (int)stack + PGSIZE - 16;
   // int old_ebp = np->tf->ebp;
-  np->tf->ebp = (int)stack + PGSIZE - 16;
+  np->tf->esp = (int)stack + PGSIZE - 12;
 
   int ret_addr = 0xffffffff;
-  // copyout(np->pgdir, np->tf->ebp, &old_ebp, sizeof(int));
-  copyout(np->pgdir, np->tf->ebp + 4, &ret_addr, sizeof(int));
-  copyout(np->pgdir, np->tf->ebp + 8, arg1, sizeof(void*));
-  copyout(np->pgdir, np->tf->ebp + 12, arg2, sizeof(void*));
-  
+  copyout(np->pgdir, np->tf->esp, &ret_addr, sizeof(int));
+  copyout(np->pgdir, np->tf->esp + 4, arg1, sizeof(void*));
+  copyout(np->pgdir, np->tf->esp + 8, arg2, sizeof(void*));
+  // char *va = uva2ka(np->pgdir, stack);
+  // *(int*)(va + PGSIZE - 4) = *(int*)arg2;
+  // *(int*)(va + PGSIZE - 8) = *(int*)arg1;
+  // *((int*)(va + PGSIZE - 12)) = 0xffffffff;
 
+  // cprintf("%x\n", *(va + PGSIZE - 4));
+
+  // cprintf("arg1 %x : %x\n", arg1, (int)(*(int*)arg1));
 
   for(i = 0; i < NOFILE; i++)
     if(proc->ofile[i])
@@ -235,17 +244,19 @@ join(void **stack)
     // Scan through table looking for zombie children.
     havekids = 0;
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->parent != proc) // || p->tf->esp != (int)*stack)
+      if(p->parent != proc || p->parent->pgdir != p->pgdir) // || p->tf->esp != (int)*stack)
         continue;
       havekids = 1;
       if(p->state == ZOMBIE){
         // Found one.
+        *stack = (void*)PGROUNDDOWN(p->tf->esp);
         pid = p->pid;
         kfree(p->kstack);
         p->kstack = 0;
-        freevm(p->pgdir);
+        // freevm(p->pgdir);
         p->state = UNUSED;
         p->pid = 0;
+        p->pgdir = 0;
         p->parent = 0;
         p->name[0] = 0;
         p->killed = 0;
@@ -257,6 +268,7 @@ join(void **stack)
     // No point waiting if we don't have any children.
     if(!havekids || proc->killed){
       release(&ptable.lock);
+      *stack = NULL;
       return -1;
     }
 

@@ -10,14 +10,14 @@ int
 sys_clone(void)
 {
 
-  char *fcn;
-  char *arg1;
-  char *arg2;
-  char *stack;
+  void(*fcn) (void *, void *);
+  int arg1;
+  int arg2;
+  void *stack;
 
-  if(argptr(0, &fcn, 4) < 0 || argptr(1, &arg1, 4) < 0 || argptr(2, &arg2, 4) < 0 || argptr(3, &stack, 4) < 0)
+  if(argptr(0, (void*)&fcn, 0) < 0 || argint(1, &arg1) < 0 || argint(2, &arg2) < 0 || argptr(3, (void*)&stack, PGSIZE) < 0)
     return -1;
-  return clone((void*)fcn, (void*)arg1, (void*)arg2, (void*)stack);
+  return clone(fcn, (void*)arg1, (void*)arg2, stack);
 }
 
 int
