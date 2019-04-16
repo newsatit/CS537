@@ -17,14 +17,16 @@ sys_clone(void)
 
   if(argptr(0, (void*)&fcn, 0) < 0 || argint(1, &arg1) < 0 || argint(2, &arg2) < 0 || argptr(3, (void*)&stack, PGSIZE) < 0)
     return -1;
+
+  cprintf("argsss   %x %x %x\n", *(int*)arg1, *(int*)arg2, stack);
   return clone(fcn, (void*)arg1, (void*)arg2, stack);
 }
 
 int
 sys_join(void)
 {
-  char *stack;
-  if(argptr(0, &stack, 4) < 0) 
+  void **stack;
+  if(argptr(0, (void*)&stack, 4) < 0) 
     return -1; 
   return join((void**)stack);
 }
