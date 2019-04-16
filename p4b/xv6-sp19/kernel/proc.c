@@ -354,6 +354,29 @@ wait(void)
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->parent != proc)
         continue;
+      if(proc->state == ZOMBIE){
+	int toFree = 1;
+	struct proc *q;
+	for(q = ptable.proc; q < &ptable.proc[NPROC]; q++){
+		if(q->pgdir == proc->pgdir && q->state != ZOMBIE){
+			toFree = 0;
+			break;
+		}
+	}
+	if(toFree == 1){
+		pid = p->pid;
+       		kfree(p->kstack);
+        	p->kstack = 0;
+       		freevm(p->pgdir);
+       		p->state = UNUSED;
+        	p->pid = 0;
+     	   	p->parent = 0;
+        	p->name[0] = 0;
+       		p->killed = 0;
+        	release(&ptable.lock);
+        	return pid;
+	}
+      }
       if (p->pgdir != proc->pgdir)
         havekids = 1;
       if(p->state == ZOMBIE && p->pgdir != proc->pgdir){
