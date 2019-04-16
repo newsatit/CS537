@@ -3,6 +3,16 @@
 #include "fcntl.h"
 #include "user.h"
 #include "x86.h"
+#define PGSIZE 0x1000
+#define PGROUNDUP(sz)  (((sz)+PGSIZE-1) & ~(PGSIZE-1))
+
+typedef struct __stacks {
+  void *addr;
+  int pid;
+} stack;
+stack stacks[65];
+int num_stack = 64;
+
 
 char*
 strcpy(char *s, char *t)
@@ -104,19 +114,52 @@ memmove(void *vdst, void *vsrc, int n)
   return vdst;
 }
 
-// int
-// thread_create(void (*start_routine)(void *, void *), void *arg1, void *arg2)
-// {
-//   //TODO: implement this
-//   return 0;
-// }
+int
+thread_create(void (*start_routine)(void *, void *), void *arg1, void *arg2)
+{
+  //TODO: implement this
+  void *stack = malloc(2 * PGSIZE);
+  if (stack == 0) {
+    return -1;
+  }
+  // printf(1, "stack %x\n", stack);
+  int ret = clone(start_routine, arg1, arg2, (void*)(PGROUNDUP((int)stack)));
+  if (ret > 0) {
+    for (int i = 0; i < num_stack; i++) {
+      if (stacks[i].pid == 0) {
+        // printf(1, "create pid %d\n", ret);
+        stacks[i].addr = stack;
+        stacks[i].pid = ret;   
+        break; 
+      }
+    }
+  }
+  return ret;
+}
 
-// int
-// thread_join()
-// {
-//   //TODO: implement this
-//   return 0;
-// }
+int
+thread_join()
+{
+  //TODO: implement this
+  void *stack;
+  int ret;
+
+  ret = join(&stack);
+  // printf(1, "ret %d\n", ret);
+  // printf(1,"\n");
+  if (ret > 0) {
+    for (int i = 0; i < num_stack; i++) {
+      if (stacks[i].pid == ret) {
+        // printf(1, "free pid %d %x\n", stacks[i].pid, stacks[i].addr);
+        free(stacks[i].addr);
+        stacks[i].pid = 0;
+        break;
+      }
+    }
+  }    
+  
+  return ret;
+}
 
 // void
 // lock_acquire(lock_t *)

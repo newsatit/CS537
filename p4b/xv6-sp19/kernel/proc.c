@@ -108,15 +108,29 @@ growproc(int n)
 {
   uint sz;
   
+  acquire(&ptable.lock);
   sz = proc->sz;
+  
   if(n > 0){
-    if((sz = allocuvm(proc->pgdir, sz, sz + n)) == 0)
+    if((sz = allocuvm(proc->pgdir, sz, sz + n)) == 0) {
+      release(&ptable.lock);
       return -1;
+    }
   } else if(n < 0){
-    if((sz = deallocuvm(proc->pgdir, sz, sz + n)) == 0)
+    if((sz = deallocuvm(proc->pgdir, sz, sz + n)) == 0) {
+      release(&ptable.lock);
       return -1;
+    }
+      
   }
   proc->sz = sz;
+  struct proc *p;
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if (p->pgdir == proc->pgdir) {
+      p->sz = sz;
+    }
+  }
+  release(&ptable.lock);
   switchuvm(proc);
   return 0;
 }
@@ -187,6 +201,7 @@ clone(void(*fcn) (void *, void *), void *arg1, void *arg2, void *stack)
   
   //assign the same pagetable to the child process
   np->pgdir = proc->pgdir;
+  // cprintf("pid %d clone pid %d\n", proc->pid, np->pid);
   // np->kstack = 0;//have to be changed to stack pointer argument pass to the clone() function
   // np->state = UNUSED;
 
@@ -264,6 +279,7 @@ join(void **stack)
         p->name[0] = 0;
         p->killed = 0;
         release(&ptable.lock);
+        // cprintf("pid: %d\n",pid);
         return pid;
       }
     }
