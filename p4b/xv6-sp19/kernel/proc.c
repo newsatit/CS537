@@ -167,7 +167,6 @@ fork(void)
 int
 clone(void(*fcn) (void *, void *), void *arg1, void *arg2, void *stack)
 { 
-  cprintf("clone() is called\n");
   int i, pid;
   struct proc *np;
 
@@ -195,9 +194,7 @@ clone(void(*fcn) (void *, void *), void *arg1, void *arg2, void *stack)
   np->parent = proc;
   *np->tf = *proc->tf;
 
-  cprintf("pid %d\n", np->pid);
-
-  
+ 
 
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
@@ -210,11 +207,9 @@ clone(void(*fcn) (void *, void *), void *arg1, void *arg2, void *stack)
   np->tf->esp = (int)stack + PGSIZE - 12;
 
   int ret_addr = 0xffffffff;
-  cprintf("assdf\n");
   copyout(np->pgdir, np->tf->esp, &ret_addr, sizeof(int));
   copyout(np->pgdir, np->tf->esp + 4, &arg1, sizeof(void*));
   copyout(np->pgdir, np->tf->esp + 8, &arg2, sizeof(void*));
-  cprintf("asdfsadfsdf\n");
   // char *va = uva2ka(np->pgdir, stack);
   // *(int*)(va + PGSIZE - 4) = *(int*)arg2;
   // *(int*)(va + PGSIZE - 8) = *(int*)arg1;
@@ -343,8 +338,9 @@ wait(void)
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->parent != proc)
         continue;
-      havekids = 1;
-      if(p->state == ZOMBIE){
+      if (p->pgdir != proc->pgdir)
+        havekids = 1;
+      if(p->state == ZOMBIE && p->pgdir != proc->pgdir){
         // Found one.
         pid = p->pid;
         kfree(p->kstack);
