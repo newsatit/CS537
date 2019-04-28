@@ -15,11 +15,29 @@
 #include "stat.h"
 #undef stat
 #undef dirent
+#define block(i) (img_ptr + BSIZE * i)
 
 // xv6 fs img similar to vsfs
 // unused | superblock | inode table | unused | bitmap(data) | data blocks
 
 void print_inode(struct dinode dip);
+
+void *img_ptr;
+struct  superblock *sb;
+struct dinode *dip;
+
+void test1();
+void test2();
+void test3();
+void test4();
+void test5();
+void test6();
+void test7();
+void test8();
+void test9();
+void test10();
+void test11();
+void test12();
 
 int main(int argc, char *argv[]) {
     int fd;
@@ -38,74 +56,25 @@ int main(int argc, char *argv[]) {
 
     struct stat sbuf;
     fstat(fd, &sbuf);
-    printf("Image that i read is %ld in size\n", sbuf.st_size);
+    // printf("Image that i read is %ld in size\n", sbuf.st_size);
 
-    // mmap
-    void *img_ptr = mmap(NULL, sbuf.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+    *img_ptr = mmap(NULL, sbuf.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+    *sb = (struct superblock *) (img_ptr + BSIZE);
+    *dip = (struct dinode *) (img_ptr + 2 * BSIZE);
 
-    // check if img_ptr is not -1
-    // 
-    // img_ptr is poting to byte 0 inside the file
-    // FS layout:
-    // unused | superblock | inodes
-    // first 512 | next 512 is super block
-    struct  superblock *sb = (struct superblock *) (img_ptr + BSIZE);
-    printf("size %d nblocks %d ninodes %d\n", sb->size, sb->nblocks, sb->ninodes);
-    //
-    // inode table, bitmaps?
-    //  inode number for / is 1. 0 is unused ?!
-    //  inode table starts from block 2 (block 0 is unused, block 1 is SB)
-    struct dinode *dip = (struct dinode *) (img_ptr + 2 * BSIZE);
-    print_inode(dip[0]);
-    print_inode(dip[1]);
+    test1();
+    test2();
+    test3();
+    test4();
+    test5();
+    test6();
+    test7();
+    test8();
+    test9();
+    test10();
+    test11();
+    test12();
 
-    uint data_block_addr = dip[1].addrs[0]; // 29
-    printf("data_block_addr for / is %d\n", data_block_addr);
-    struct xv6_dirent *entry = (struct xv6_dirent *)(img_ptr + data_block_addr * BSIZE);
-    for (int i = 0; i < 5; i++) {
-        printf("name is %s inum is %d\n", entry[i].name, entry[i].inum);
-    }
-
-    // print addrs for inode number 2
-    print_inode(dip[2]);
-    printf("the ndirect for /README are\n");
-    for (int i = 0; i < NDIRECT; i++) {
-        printf("%d ", dip[2].addrs[i]);
-    }
-    printf("\n");
-
-    char* readme_ptr = (char*) (img_ptr + BSIZE * dip[2].addrs[0]);
-    printf("first few chars of readme are\n");
-    for (int i = 0; i < BSIZE; i++) {
-        printf("%c", readme_ptr[i]);
-    }
-    readme_ptr = (img_ptr + BSIZE * dip[2].addrs[1]);
-    printf("\n");
-
-    // indirect blocks
-    print_inode(dip[3]);
-    printf("the ndirect for /cat are\n");
-    for (int i = 0; i < NDIRECT + 1; i++) {
-        printf("%d ", dip[3].addrs[i]);
-    }
-    printf("\n");
-
-    // indirect pointer contains a list of addrs
-    // uints in our case
-    uint* cat_indirect = (uint*) (img_ptr + BSIZE * dip[3].addrs[NDIRECT]);
-    printf("the contents of cat_indirect are \n");
-    for (int i = 0; i < BSIZE/sizeof(uint); i++) {
-        printf("%d ", cat_indirect[i]);
-    }
-    printf("\n");
-
-    // Bitmaps??
-    printf("Number of inodes %d size of IPB %ld\n", sb->ninodes, IPB);
-
-    // FS layout:
-    // unused | superblock | inodes - 25 blocks | unused | bitmap | data
-    // 1 + 1 + 25 + 1 + 1 + 995 = 1024 blocks
-     
 }
 
 void print_inode(struct dinode dip) {
@@ -113,4 +82,52 @@ void print_inode(struct dinode dip) {
     printf("nlink: %d, ", dip.nlink);
     printf("size:%d, ", dip.size);
     printf("first_addr:%d\n", dip.addrs[0]);
+}
+
+void test1() {
+
+}
+
+void test2() {
+
+}
+
+void test3() {
+
+}
+
+void test4() {
+
+}
+
+void test5() {
+
+}
+
+void test6() {
+
+}
+
+void test7() {
+
+}
+
+void test8() {
+
+}
+
+void test9() {
+
+}
+
+void test10() {
+
+}
+
+void test11() {
+
+}
+
+void test12() {
+
 }
