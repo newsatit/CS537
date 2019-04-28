@@ -254,12 +254,13 @@ winode(uint inum, struct dinode *ip)
   char buf[512];
   uint bn;
   struct dinode *dip;
-  
+  // to update an inode, read innode block and then write it back!
   bn = i2b(inum);
   rsect(bn, buf);
   dip = ((struct dinode*)buf) + (inum % IPB);
   *dip = *ip;
   wsect(bn, buf);
+  //We are doing read-modify-write
 }
 
 void
