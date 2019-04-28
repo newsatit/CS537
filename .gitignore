@@ -6,4 +6,6 @@ p4b/
 p1b/  
 p2b/  
 p4a/
+.vscode/
+*.log
 #except php files
