@@ -1,0 +1,9 @@
+#ignore all kind of files
+p1a/  
+p2a/  
+p3/   
+p4b/  
+p1b/  
+p2b/  
+p4a/
+#except php files
