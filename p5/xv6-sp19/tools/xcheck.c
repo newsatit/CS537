@@ -58,9 +58,9 @@ int main(int argc, char *argv[]) {
     fstat(fd, &sbuf);
     // printf("Image that i read is %ld in size\n", sbuf.st_size);
 
-    *img_ptr = mmap(NULL, sbuf.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-    *sb = (struct superblock *) (img_ptr + BSIZE);
-    *dip = (struct dinode *) (img_ptr + 2 * BSIZE);
+    img_ptr = mmap(NULL, sbuf.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+    sb = (struct superblock *) (img_ptr + BSIZE);
+    dip = (struct dinode *) (img_ptr + 2 * BSIZE);
 
     test1();
     test2();
