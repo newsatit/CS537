@@ -10,12 +10,8 @@ typedef struct __stacks {
   void *addr;
   int pid;
 } stack;
-
-
-
 stack stacks[65];
 int num_stack = 64;
-
 
 
 char*
@@ -165,29 +161,20 @@ thread_join()
   return ret;
 }
 
-int fetch_add(volatile uint* ptr){
-  return xchg(ptr,*ptr+1);
-}
+// void
+// lock_acquire(lock_t *)
+// {
+//   //TODO: implement this
+// }
 
-void
-lock_acquire(lock_t *lock)
-{
-  //TODO: implement this
-  int myturn = fetch_add(&lock->ticket);
-  while(lock->turn != myturn);
-}
+// void
+// lock_release(lock_t *)
+// {
+//   //TODO: implement this
+// }
 
-void
-lock_release(lock_t *lock)
-{
-  //TODO: implement this
-  fetch_add(&lock->turn);
-}
-
-void
-lock_init(lock_t *lock)
-{
-  //TODO: implement this
-  lock->ticket = 0;
-  lock->turn = 0;
-}
+// void
+// lock_init(lock_t *)
+// {
+//   //TODO: implement this
+// }

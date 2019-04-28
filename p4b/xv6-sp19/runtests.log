@@ -8,7 +8,25 @@ build xv6 using make
 **********************************************************************
 Trying to build project using make
 make
-make: Nothing to be done for 'all'.
+gcc  -I include -nostdinc -Wall -Werror -ggdb -fno-pic -fno-builtin -fno-strict-aliasing -fno-stack-protector -m32 \
+	-M -MG kernel/proc.c -MF kernel/proc.d -MT kernel/proc.d -MT kernel/proc.o
+gcc  -I include -nostdinc -Wall -Werror -ggdb -fno-pic -fno-builtin -fno-strict-aliasing -fno-stack-protector -m32 -c -o kernel/proc.o kernel/proc.c
+ld  -m    elf_i386 -nostdlib --omagic \
+	--section-start=.text=0x100000 --entry=main --output=kernel/kernel \
+	kernel/multiboot.o kernel/data.o kernel/bio.o kernel/console.o kernel/exec.o kernel/file.o kernel/fs.o kernel/ide.o kernel/ioapic.o kernel/kalloc.o kernel/kbd.o kernel/lapic.o kernel/main.o kernel/mp.o kernel/picirq.o kernel/pipe.o kernel/proc.o kernel/spinlock.o kernel/string.o kernel/swtch.o kernel/syscall.o kernel/sysfile.o kernel/sysproc.o kernel/timer.o kernel/trapasm.o kernel/trap.o kernel/uart.o kernel/vectors.o kernel/vm.o \
+	-b binary initcode bootother
+dd if=/dev/zero of=xv6.img count=10000
+10000+0 records in
+10000+0 records out
+5120000 bytes (5.1 MB, 4.9 MiB) copied, 0.0173924 s, 294 MB/s
+dd if=kernel/bootblock of=xv6.img conv=notrunc
+1+0 records in
+1+0 records out
+512 bytes copied, 5.6623e-05 s, 9.0 MB/s
+dd if=kernel/kernel of=xv6.img seek=1 conv=notrunc
+265+1 records in
+265+1 records out
+135716 bytes (136 kB, 133 KiB) copied, 0.000422317 s, 321 MB/s
 
 
 test build PASSED
@@ -32,25 +50,25 @@ ld  -m    elf_i386 -nostdlib --omagic --entry=main --section-start=.text=0x0 --o
 cp user/bin/tester fs/tester
 ./tools/mkfs fs.img fs
 used 29 (bit 1 ninode 26) free 29 total 1024
-grep
-ls
 rm
-ln
-stressfs
 zombie
-init
-mkdir
-wc
 usertests
-README
 forktest
-tester
+mytest
+echo
 sh
+tester
+mkdir
+init
+wc
+ls
+ln
+README
+grep
 kill
 cat
-echo
-mytest
-balloc: first 511 blocks have been allocated
+stressfs
+balloc: first 482 blocks have been allocated
 balloc: write bitmap block at sector 28
 rm user/bin/tester
 make qemu-nox 
@@ -93,25 +111,25 @@ ld  -m    elf_i386 -nostdlib --omagic --entry=main --section-start=.text=0x0 --o
 cp user/bin/tester fs/tester
 ./tools/mkfs fs.img fs
 used 29 (bit 1 ninode 26) free 29 total 1024
-grep
-ls
 rm
-ln
-stressfs
 zombie
-init
-mkdir
-wc
 usertests
-README
 forktest
-tester
+mytest
+echo
 sh
+tester
+mkdir
+init
+wc
+ls
+ln
+README
+grep
 kill
 cat
-echo
-mytest
-balloc: first 514 blocks have been allocated
+stressfs
+balloc: first 484 blocks have been allocated
 balloc: write bitmap block at sector 28
 rm user/bin/tester
 make qemu-nox 
@@ -154,25 +172,25 @@ ld  -m    elf_i386 -nostdlib --omagic --entry=main --section-start=.text=0x0 --o
 cp user/bin/tester fs/tester
 ./tools/mkfs fs.img fs
 used 29 (bit 1 ninode 26) free 29 total 1024
-grep
-ls
 rm
-ln
-stressfs
 zombie
-init
-mkdir
-wc
 usertests
-README
 forktest
-tester
+mytest
+echo
 sh
+tester
+mkdir
+init
+wc
+ls
+ln
+README
+grep
 kill
 cat
-echo
-mytest
-balloc: first 515 blocks have been allocated
+stressfs
+balloc: first 485 blocks have been allocated
 balloc: write bitmap block at sector 28
 rm user/bin/tester
 make qemu-nox 
@@ -215,25 +233,25 @@ ld  -m    elf_i386 -nostdlib --omagic --entry=main --section-start=.text=0x0 --o
 cp user/bin/tester fs/tester
 ./tools/mkfs fs.img fs
 used 29 (bit 1 ninode 26) free 29 total 1024
-grep
-ls
 rm
-ln
-stressfs
 zombie
-init
-mkdir
-wc
 usertests
-README
 forktest
-tester
+mytest
+echo
 sh
+tester
+mkdir
+init
+wc
+ls
+ln
+README
+grep
 kill
 cat
-echo
-mytest
-balloc: first 512 blocks have been allocated
+stressfs
+balloc: first 483 blocks have been allocated
 balloc: write bitmap block at sector 28
 rm user/bin/tester
 make qemu-nox 
@@ -276,25 +294,25 @@ ld  -m    elf_i386 -nostdlib --omagic --entry=main --section-start=.text=0x0 --o
 cp user/bin/tester fs/tester
 ./tools/mkfs fs.img fs
 used 29 (bit 1 ninode 26) free 29 total 1024
-grep
-ls
 rm
-ln
-stressfs
 zombie
-init
-mkdir
-wc
 usertests
-README
 forktest
-tester
+mytest
+echo
 sh
+tester
+mkdir
+init
+wc
+ls
+ln
+README
+grep
 kill
 cat
-echo
-mytest
-balloc: first 510 blocks have been allocated
+stressfs
+balloc: first 480 blocks have been allocated
 balloc: write bitmap block at sector 28
 rm user/bin/tester
 make qemu-nox 
@@ -337,25 +355,25 @@ ld  -m    elf_i386 -nostdlib --omagic --entry=main --section-start=.text=0x0 --o
 cp user/bin/tester fs/tester
 ./tools/mkfs fs.img fs
 used 29 (bit 1 ninode 26) free 29 total 1024
-grep
-ls
 rm
-ln
-stressfs
 zombie
-init
-mkdir
-wc
 usertests
-README
 forktest
-tester
+mytest
+echo
 sh
+tester
+mkdir
+init
+wc
+ls
+ln
+README
+grep
 kill
 cat
-echo
-mytest
-balloc: first 514 blocks have been allocated
+stressfs
+balloc: first 484 blocks have been allocated
 balloc: write bitmap block at sector 28
 rm user/bin/tester
 make qemu-nox 
@@ -398,25 +416,25 @@ ld  -m    elf_i386 -nostdlib --omagic --entry=main --section-start=.text=0x0 --o
 cp user/bin/tester fs/tester
 ./tools/mkfs fs.img fs
 used 29 (bit 1 ninode 26) free 29 total 1024
-grep
-ls
 rm
-ln
-stressfs
 zombie
-init
-mkdir
-wc
 usertests
-README
 forktest
-tester
+mytest
+echo
 sh
+tester
+mkdir
+init
+wc
+ls
+ln
+README
+grep
 kill
 cat
-echo
-mytest
-balloc: first 518 blocks have been allocated
+stressfs
+balloc: first 488 blocks have been allocated
 balloc: write bitmap block at sector 28
 rm user/bin/tester
 make qemu-nox 
@@ -469,25 +487,25 @@ ld  -m    elf_i386 -nostdlib --omagic --entry=main --section-start=.text=0x0 --o
 cp user/bin/tester fs/tester
 ./tools/mkfs fs.img fs
 used 29 (bit 1 ninode 26) free 29 total 1024
-grep
-ls
 rm
-ln
-stressfs
 zombie
-init
-mkdir
-wc
 usertests
-README
 forktest
-tester
+mytest
+echo
 sh
+tester
+mkdir
+init
+wc
+ls
+ln
+README
+grep
 kill
 cat
-echo
-mytest
-balloc: first 520 blocks have been allocated
+stressfs
+balloc: first 491 blocks have been allocated
 balloc: write bitmap block at sector 28
 rm user/bin/tester
 make qemu-nox 
@@ -528,53 +546,29 @@ make
 gcc  -I include -nostdinc -Wall -Werror -ggdb -fno-pic -fno-builtin -fno-strict-aliasing -fno-stack-protector -m32 \
 	-M -MG user/tester.c -MF user/tester.d -MT user/tester.d -MT user/tester.o
 gcc  -I include -nostdinc -Wall -Werror -ggdb -fno-pic -fno-builtin -fno-strict-aliasing -fno-stack-protector -m32 -c -o user/tester.o user/tester.c
-ld  -m    elf_i386 -nostdlib --omagic --entry=main --section-start=.text=0x0 --output=user/bin/tester user/tester.o user/ulib.o user/usys.o user/printf.o user/umalloc.o
-cp user/bin/tester fs/tester
-./tools/mkfs fs.img fs
-used 29 (bit 1 ninode 26) free 29 total 1024
-grep
-ls
-rm
-ln
-stressfs
-zombie
-init
-mkdir
-wc
-usertests
-README
-forktest
-tester
-sh
-kill
-cat
-echo
-mytest
-balloc: first 513 blocks have been allocated
-balloc: write bitmap block at sector 28
-rm user/bin/tester
-make qemu-nox 
-Ctrl+a h for help
-/p/course/cs537-remzi/ta/tools/qemu -nographic -hdb fs.img xv6.img -smp 2
-WARNING: Image format was not specified for 'fs.img' and probing guessed raw.
-         Automatically detecting the format is dangerous for raw images, write operations on block 0 will be restricted.
-         Specify the 'raw' format explicitly to remove the restrictions.
-WARNING: Image format was not specified for 'xv6.img' and probing guessed raw.
-         Automatically detecting the format is dangerous for raw images, write operations on block 0 will be restricted.
-         Specify the 'raw' format explicitly to remove the restrictions.
-xv6...
-lapicinit: 1 0xfee00000
-cpu1: starting
-cpu0: starting
-init: starting sh
-$ tester
-tester
-Unblocking all 50 threads...
-PASSED TEST!
+user/tester.c:20:1: error: unknown type name ‘lock_t’
+ lock_t lock;
+ ^~~~~~
+user/tester.c: In function ‘func’:
+user/tester.c:48:5: error: implicit declaration of function ‘lock_acquire’ [-Werror=implicit-function-declaration]
+     lock_acquire(&lock);
+     ^~~~~~~~~~~~
+user/tester.c:54:5: error: implicit declaration of function ‘lock_release’; did you mean ‘__sync_lock_release’? [-Werror=implicit-function-declaration]
+     lock_release(&lock);
+     ^~~~~~~~~~~~
+     __sync_lock_release
+user/tester.c: In function ‘main’:
+user/tester.c:69:3: error: implicit declaration of function ‘lock_init’ [-Werror=implicit-function-declaration]
+   lock_init(&lock);
+   ^~~~~~~~~
+cc1: all warnings being treated as errors
+user/makefile.mk:93: recipe for target 'user/tester.o' failed
+make: *** [user/tester.o] Error 1
 
 
-test lock_basic PASSED (10 of 10)
+test lock_basic FAILED (0 of 10)
  (basic test for lock correctness)
+ make failed (error 2)
 
 **********************************************************************
 Summary:
@@ -605,9 +599,10 @@ test threads_many PASSED (10 of 10)
 test threads_sbrk PASSED (10 of 10)
  (test to make sure threads handle sbrk() correctly)
 
-test lock_basic PASSED (10 of 10)
+test lock_basic FAILED (0 of 10)
  (basic test for lock correctness)
+ make failed (error 2)
 
-Passed 10 of 10 tests.
-Overall 10 of 10
-Points 90 of 90
+Passed 9 of 10 tests.
+Overall 9 of 10
+Points 80 of 90
