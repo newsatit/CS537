@@ -85,7 +85,14 @@ void print_inode(struct dinode dip) {
 }
 
 void test1() {
-
+    // Each inode is either unallocated or one of the valid types (T_FILE, T_DIR, T_DEV). 
+    // If not, print ERROR: bad inode.
+    for(int i = 0; i < sb->ninodes; i++){
+        if(dip[i].type < 0 || dip[i].type > 3){
+            perror("ERROR: bad inode.");
+            exit(1);
+        }
+    }
 }
 
 void test2() {
@@ -114,7 +121,7 @@ void test7() {
 
 void test8() {
 
-}
+} 
 
 void test9() {
 
