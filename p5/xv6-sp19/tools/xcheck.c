@@ -67,8 +67,8 @@ int main(int argc, char *argv[]) {
 
     test1();
     test2();
-    test3();
     test4();
+    test3();
     test5();
     test6();
     test7();
@@ -114,7 +114,8 @@ void test2() {
             int num_dblocks = min(num_all_blocks, NDIRECT);
             int num_inblocks = num_all_blocks - NDIRECT;
             
-            int first_dblock = 3 + ROUNDUP(sb->ninodes, IPB)/IPB + ROUNDUP(sb->nblocks, BPB)/BPB;
+            // int first_dblock = 3 + ROUNDUP(sb->ninodes, IPB)/IPB + ROUNDUP(sb->nblocks, BPB)/BPB;
+            int first_dblock = BBLOCK(sb->nblocks, sb->ninodes);
             int last_dblock = first_dblock + sb->nblocks - 1;
             // direct blocks
             for (int j = 0; j < num_dblocks; j++) {
@@ -139,6 +140,7 @@ void test2() {
 
 // Root directory exists, its inode number is 1, and the parent of the root directory is itself.
 // If not, print ERROR: root directory does not exist.
+// TODO: Fix
 void test3() {
     // printf("Ino: %ld \n", sbuf.st_ino);
 
@@ -163,8 +165,63 @@ void test3() {
     }
 }
 
-void test4() {
 
+/*
+Each directory contains . and .. entries, and the . entry points to the directory itself. 
+If not, print ERROR: directory not properly formatted.
+*/
+void test4() {
+    for (int i = 0; i < sb->ninodes; i++) {
+        if (dip[i].type == T_DIR) {
+            // has current directory "."
+            int cur_dir = 0;
+            // has parent directory ".."
+            int parent_dir = 0;
+            int num_all_blocks = ROUNDUP(dip[i].size, BSIZE)/BSIZE;
+            int num_dblocks = min(num_all_blocks, NDIRECT);
+            int num_inblocks = num_all_blocks - NDIRECT;
+            
+           // direct blocks
+            for (int j = 0; j < num_dblocks; j++) {
+                uint data_block_addr = dip[i].addrs[j];
+                struct xv6_dirent *entry = (struct xv6_dirent *)(img_ptr + data_block_addr * BSIZE);
+                for (int k = 0; k < DIRSIZ; k++) {
+                    if (!strcmp(entry[k].name, ".")) {
+                        cur_dir = 1;
+                        if (entry[k].inum != i) {
+                            fprintf(stderr, "ERROR: directory not properly formatted.\n");
+                            exit(1);
+                        }
+                    } else if (!strcmp(entry[k].name, "..")) {
+                        parent_dir = 1;
+                    }
+                }
+            } 
+
+            // indirect blocks
+            uint *ind = (uint*)block(dip[i].addrs[NDIRECT]);
+            for (int j = 0; j < num_inblocks; j++) {
+                uint data_block_addr = ind[j];
+                struct xv6_dirent *entry = (struct xv6_dirent *)(img_ptr + data_block_addr * BSIZE);
+                for (int k = 0; k < DIRSIZ; k++) {
+                    if (!strcmp(entry[k].name, ".")) {
+                        cur_dir = 1;
+                        if (entry[k].inum != i) {
+                            fprintf(stderr, "ERROR: directory not properly formatted.\n");
+                            exit(1);
+                        }
+                    } else if (!strcmp(entry[k].name, "..")) {
+                        parent_dir = 1;
+                    }
+                }
+            }
+        
+            if (cur_dir == 0|| parent_dir == 0) { 
+                fprintf(stderr, "ERROR: directory not properly formatted.\n");
+                exit(1);
+            }
+        }
+    }
 }
 
 void test5() {
