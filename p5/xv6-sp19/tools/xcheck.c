@@ -22,6 +22,7 @@
 
 void print_inode(struct dinode dip);
 
+struct stat sbuf;
 void *img_ptr;
 struct  superblock *sb;
 struct dinode *dip;
@@ -54,7 +55,6 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    struct stat sbuf;
     fstat(fd, &sbuf);
     // printf("Image that i read is %ld in size\n", sbuf.st_size);
 
@@ -75,6 +75,7 @@ int main(int argc, char *argv[]) {
     test11();
     test12();
 
+    exit(0);
 }
 
 void print_inode(struct dinode dip) {
@@ -84,12 +85,12 @@ void print_inode(struct dinode dip) {
     printf("first_addr:%d\n", dip.addrs[0]);
 }
 
+// Each inode is either unallocated or one of the valid types (T_FILE, T_DIR, T_DEV). 
+// If not, print ERROR: bad inode.
 void test1() {
-    // Each inode is either unallocated or one of the valid types (T_FILE, T_DIR, T_DEV). 
-    // If not, print ERROR: bad inode.
     for(int i = 0; i < sb->ninodes; i++){
         if(dip[i].type < 0 || dip[i].type > 3){
-            perror("ERROR: bad inode.");
+            fprintf(stderr, "ERROR: bad inode.\n");
             exit(1);
         }
     }
@@ -99,8 +100,30 @@ void test2() {
 
 }
 
+// Root directory exists, its inode number is 1, and the parent of the root directory is itself.
+// If not, print ERROR: root directory does not exist.
 void test3() {
+    // printf("Ino: %ld \n", sbuf.st_ino);
 
+    uint data_block_addr = dip[1].addrs[0];
+    // printf("data_block_addr for / is %d\n", data_block_addr);
+    struct xv6_dirent *entry = (struct xv6_dirent *)(img_ptr + data_block_addr * BSIZE);
+    // for (int i = 0; i < 5; i++) {
+    //     printf("name is %s inum is %d\n", entry[i].name, entry[i].inum);
+    // }
+
+    // for(int i = 0; i < dip[1].nlink; i++){
+    //     if( (strcmp(entry[i].name,".") == 0 && entry[i].inum != 1) || (strcmp(entry[i].name,"..") == 0 && entry[i].inum != 1) ){
+    //         fprintf(stderr, "ERROR: root directory does not exist.");
+    //         exit(1);
+    //     }
+        
+    // }
+
+    if (entry[0].inum != 1 || entry[1].inum != 1){
+        fprintf(stderr, "ERROR: root directory does not exist.\n");
+        exit(1);
+    }
 }
 
 void test4() {
