@@ -86,7 +86,7 @@ void print_inode(struct dinode dip) {
     printf("file type:%d, ", dip.type);
     printf("nlink: %d, ", dip.nlink);
     printf("size:%d, ", dip.size);
-    printf("first_addr:%d\n", dip.addrs[0]);
+    printf("first_addr:%x\n", dip.addrs[0]);
 }
 
 // Each inode is either unallocated or one of the valid types (T_FILE, T_DIR, T_DEV). 
@@ -115,7 +115,7 @@ void test2() {
             int num_inblocks = num_all_blocks - NDIRECT;
             
             // int first_dblock = 3 + ROUNDUP(sb->ninodes, IPB)/IPB + ROUNDUP(sb->nblocks, BPB)/BPB;
-            int first_dblock = BBLOCK(sb->nblocks, sb->ninodes);
+            int first_dblock = BBLOCK((sb->nblocks-1), sb->ninodes) + 1;
             int last_dblock = first_dblock + sb->nblocks - 1;
             // direct blocks
             for (int j = 0; j < num_dblocks; j++) {
@@ -225,7 +225,59 @@ void test4() {
 }
 
 void test5() {
+    for (int i = 0; i < sb->ninodes; i++) {
+        if (dip[i].type != 0) {
+            // printf("inode: %d\n\t",i);
+            // print_inode(dip[i]);
+            int num_all_blocks = ROUNDUP(dip[i].size, BSIZE)/BSIZE;
+            int num_dblocks = min(num_all_blocks, NDIRECT);
+            int num_inblocks = num_all_blocks - NDIRECT;
+            // printf("size %d\n", dip[i].size);
+            // printf("all %d, num_dblocks %d, inblocks %d\n", num_all_blocks, num_dblocks, num_inblocks);
+            // printf("first block %x\n", dip[i].addrs[0]);
+            
+            // int first_dblock = 3 + ROUNDUP(sb->ninodes, IPB)/IPB + ROUNDUP(sb->nblocks, BPB)/BPB;
+            int first_dblock = BBLOCK((sb->nblocks-1), sb->ninodes) + 1;
+            // direct blocks
 
+            for (int j = 0; j < num_dblocks; j++) {
+                char* bitblock = (char*)( img_ptr + BBLOCK(dip[i].addrs[j],sb->ninodes) * BSIZE );
+                int bit_index = (dip[i].addrs[j] - first_dblock) % BPB;
+                int byte_offset = bit_index / 8;
+                int bit_offset = bit_index % 8;
+
+                char b = bitblock[byte_offset];
+
+                // printf("block: %x addr: %lx bit: %x\n",dip[i].addrs[j], BBLOCK(dip[i].addrs[j],sb->ninodes) * BSIZE, b);
+                // printf("byte %d bit %d\n", byte_offset, bit_offset);
+
+                if(!(b & (1 << bit_offset))) {
+                    fprintf(stderr, "ERROR: address used by inode but marked free in bitmap.\n");
+                    exit(1);
+                }
+
+                // use BBLOCK(addr,sb->ninodes) to find which bitmap block 
+                // (addr - first_block) % BPB will give us the bit number we should be verifying 
+            }
+
+            // indirect blocks
+            uint *ind = (uint*)block(dip[i].addrs[NDIRECT]);
+            for (int j = 0; j < num_inblocks; j++) {
+                char* bitblock = (char*)( img_ptr + BBLOCK(ind[j],sb->ninodes) * BSIZE );
+                int bit_index = (ind[j] - first_dblock) % BPB;
+                int byte_offset = bit_index / 8;
+                int bit_offset = bit_index % 8;
+
+                char b = bitblock[byte_offset];
+                // printf("block: %x addr: %lx bit: %x\n",ind[j], BBLOCK(ind[j],sb->ninodes) * BSIZE, b);
+                // printf("byte %d bit %d\n", byte_offset, bit_offset);
+                if(!(b & (1 << bit_offset))) {
+                    fprintf(stderr, "ERROR: address used by inode but marked free in bitmap.\n");
+                    exit(1);
+                }
+            }
+        }
+    }
 }
 
 void test6() {
