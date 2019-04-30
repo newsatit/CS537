@@ -37,8 +37,7 @@ void test4();
 void test5();
 void test6();
 void test78();
-void test9();
-void test10();
+void test910();
 void test11();
 void test12();
 
@@ -53,7 +52,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (fd < 0) {
-        fprintf(stderr, "image not found.\n", argv[1]);
+        fprintf(stderr, "image not found.\n");
         exit(1);
     }
 
@@ -63,7 +62,6 @@ int main(int argc, char *argv[]) {
     sb = (struct superblock *) (img_ptr + BSIZE);
     dip = (struct dinode *) (img_ptr + 2 * BSIZE);
 
-
     test1();
     test2();
     test4();
@@ -71,8 +69,7 @@ int main(int argc, char *argv[]) {
     test5();
     test6();
     test78();
-    test9();
-    test10();
+    test910();
     test11();
     test12();
 
@@ -90,7 +87,7 @@ void print_inode(struct dinode dip) {
 // Each inode is either unallocated or one of the valid types (T_FILE, T_DIR, T_DEV). 
 // If not, print ERROR: bad inode.
 void test1() {
-    for(int i = 0; i < sb->ninodes; i++){
+    for(int i = 0; i < sb->ninodes + 1; i++){
         if(dip[i].type < 0 || dip[i].type > 3){
             fprintf(stderr, "ERROR: bad inode.\n");
             exit(1);
@@ -312,8 +309,6 @@ void test78() {
         int num_dblocks = min(num_all_blocks, NDIRECT);
         int num_inblocks = num_all_blocks - NDIRECT;
             
-        int first_dblock = BBLOCK((sb->nblocks-1), sb->ninodes) + 1;
-        int last_dblock = first_dblock + sb->nblocks - 1;
         // direct blocks
         for (int j = 0; j < num_dblocks; j++) {
             if (barray[dip[i].addrs[j]] != 0) {
@@ -348,11 +343,52 @@ void test78() {
     }
 }
 
-void test9() {
+void test910() {
+    // get lists of inode referred by a directory
+    // 1: reference by some inode 0: not reference by some inode
+    char* inode_array = calloc((sb->ninodes) + 1,sizeof(char));    
+    for(int i = 1; i < sb->ninodes + 1; i++){
+        if(dip[i].type == T_DIR){
+            // print_inode(dip[i]);
+            int num_all_blocks = ROUNDUP(dip[i].size, BSIZE)/BSIZE;
+            int num_dblocks = min(num_all_blocks, NDIRECT);
+            int num_inblocks = num_all_blocks - NDIRECT;
 
-}
+            // direct blocks
+            for (int j = 0; j < num_dblocks; j++) {
+                struct xv6_dirent *entry = (struct xv6_dirent *)(img_ptr + dip[i].addrs[j] * BSIZE);
+                for(int k = 0; k < BSIZE/(int)sizeof(struct xv6_dirent); k++){
+                    inode_array[entry[k].inum] = 1;
+                }
+            }
 
-void test10() {
+            // indirect blocks
+            uint *ind = (uint*)block(dip[i].addrs[NDIRECT]);
+            for (int j = 0; j < num_inblocks; j++) {
+                struct xv6_dirent *entry = (struct xv6_dirent *)(img_ptr + ind[j] * BSIZE);
+                for(int k = 0; k < BSIZE/ (int)sizeof(struct xv6_dirent); k++){
+                    inode_array[entry[k].inum] = 1;
+                }
+            }
+        }
+    }
+
+    for(int i = 1; i < sb->ninodes + 1; i++){
+    //    printf("%d %d\n",entry[k].name, entry[k].inum);
+        if(dip[i].type != 0) {
+            if(inode_array[i] == 0){
+                fprintf(stderr,"ERROR: inode marked use but not found in a directory.\n");
+                exit(1);
+            }
+        }
+
+        if(inode_array[i] != 0){
+            if(dip[i].type == 0){
+                fprintf(stderr,"ERROR: inode referred to in directory but marked free.\n");
+                exit(1);
+            }
+        }
+    }
 
 }
 
