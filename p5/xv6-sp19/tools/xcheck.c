@@ -141,26 +141,36 @@ void test2() {
 // If not, print ERROR: root directory does not exist.
 // TODO: Fix
 void test3() {
-    // printf("Ino: %ld \n", sbuf.st_ino);
+    int num_all_blocks = ROUNDUP(dip[1].size, BSIZE)/BSIZE;
+    int num_dblocks = min(num_all_blocks, NDIRECT);
+    int num_inblocks = num_all_blocks - NDIRECT;
 
-    uint data_block_addr = dip[1].addrs[0];
-    // printf("data_block_addr for / is %d\n", data_block_addr);
-    struct xv6_dirent *entry = (struct xv6_dirent *)(img_ptr + data_block_addr * BSIZE);
-    // for (int i = 0; i < 5; i++) {
-    //     printf("name is %s inum is %d\n", entry[i].name, entry[i].inum);
-    // }
-
-    // for(int i = 0; i < dip[1].nlink; i++){
-    //     if( (strcmp(entry[i].name,".") == 0 && entry[i].inum != 1) || (strcmp(entry[i].name,"..") == 0 && entry[i].inum != 1) ){
-    //         fprintf(stderr, "ERROR: root directory does not exist.");
-    //         exit(1);
-    //     }
-        
-    // }
-
-    if (entry[0].inum != 1 || entry[1].inum != 1){
+    if(dip[1].type != T_DIR){
         fprintf(stderr, "ERROR: root directory does not exist.\n");
         exit(1);
+    }
+
+    // direct blocks
+    for (int j = 0; j < num_dblocks; j++) {
+        struct xv6_dirent *entry = (struct xv6_dirent *)(img_ptr + dip[1].addrs[j] * BSIZE);
+        for(int k = 0; k < BSIZE/sizeof(struct xv6_dirent); k++){
+            if( (!strcmp(entry[k].name,".") || !strcmp(entry[k].name,"..")) && entry[k].inum != 1 ){
+                fprintf(stderr, "ERROR: root directory does not exist.\n");
+                exit(1);
+            }
+        }
+    }
+
+    // indirect blocks
+    uint *ind = (uint*)block(dip[1].addrs[NDIRECT]);
+    for (int j = 0; j < num_inblocks; j++) {
+        struct xv6_dirent *entry = (struct xv6_dirent *)(img_ptr + ind[j] * BSIZE);
+        for(int k = 0; k < BSIZE/sizeof(struct xv6_dirent); k++){
+            if( (!strcmp(entry[k].name,".") || !strcmp(entry[k].name,"..")) && entry[k].inum != 1 ){
+                fprintf(stderr, "ERROR: root directory does not exist.\n");
+                exit(1);
+            }
+        }
     }
 }
 
