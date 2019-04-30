@@ -29,6 +29,8 @@ struct stat sbuf;
 void *img_ptr;
 struct  superblock *sb;
 struct dinode *dip;
+int first_dblock;
+int last_dblock;
 
 void test1();
 void test2();
@@ -63,6 +65,8 @@ int main(int argc, char *argv[]) {
     sb = (struct superblock *) (img_ptr + BSIZE);
     dip = (struct dinode *) (img_ptr + 2 * BSIZE);
 
+    first_dblock = BBLOCK((sb->nblocks-1), sb->ninodes) + 1;
+    last_dblock = first_dblock + sb->nblocks - 1;
 
     test1();
     test2();
@@ -112,9 +116,6 @@ void test2() {
             int num_dblocks = min(num_all_blocks, NDIRECT);
             int num_inblocks = num_all_blocks - NDIRECT;
             
-            // int first_dblock = 3 + ROUNDUP(sb->ninodes, IPB)/IPB + ROUNDUP(sb->nblocks, BPB)/BPB;
-            int first_dblock = BBLOCK((sb->nblocks-1), sb->ninodes) + 1;
-            int last_dblock = first_dblock + sb->nblocks - 1;
             // direct blocks
             for (int j = 0; j < num_dblocks; j++) {
                 if (dip[i].addrs[j] < first_dblock || dip[i].addrs[j] > last_dblock) {
@@ -233,11 +234,8 @@ void test5() {
             // printf("size %d\n", dip[i].size);
             // printf("all %d, num_dblocks %d, inblocks %d\n", num_all_blocks, num_dblocks, num_inblocks);
             // printf("first block %x\n", dip[i].addrs[0]);
-            
-            // int first_dblock = 3 + ROUNDUP(sb->ninodes, IPB)/IPB + ROUNDUP(sb->nblocks, BPB)/BPB;
-            int first_dblock = BBLOCK((sb->nblocks-1), sb->ninodes) + 1;
-            // direct blocks
 
+            // direct blocks
             for (int j = 0; j < num_dblocks; j++) {
                 char* bitblock = (char*)( img_ptr + BBLOCK(dip[i].addrs[j],sb->ninodes) * BSIZE );
                 int bit_index = (dip[i].addrs[j] - first_dblock) % BPB;
@@ -308,44 +306,44 @@ void test78() {
     //iterate through all inodes
     for(int i=0; i< sb->ninodes; i++){
         if (dip[i].type != 0) {
-        int num_all_blocks = ROUNDUP(dip[i].size, BSIZE)/BSIZE;
-        int num_dblocks = min(num_all_blocks, NDIRECT);
-        int num_inblocks = num_all_blocks - NDIRECT;
-            
-        int first_dblock = BBLOCK((sb->nblocks-1), sb->ninodes) + 1;
-        int last_dblock = first_dblock + sb->nblocks - 1;
-        // direct blocks
-        for (int j = 0; j < num_dblocks; j++) {
-            if (barray[dip[i].addrs[j]] != 0) {
-               fprintf(stderr, "ERROR: direct address used more than once.\n");
-                exit(1);
-           }else{
-               barray[dip[i].addrs[j]] = 1;
-           }
-        }
+            int num_all_blocks = ROUNDUP(dip[i].size, BSIZE)/BSIZE;
+            int num_dblocks = min(num_all_blocks, NDIRECT);
+            int num_inblocks = num_all_blocks - NDIRECT;
+                
+            // direct blocks
+            for (int j = 0; j < num_dblocks; j++) {
+                if (barray[dip[i].addrs[j]] != 0) {
+                fprintf(stderr, "ERROR: direct address used more than once.\n");
+                    exit(1);
+            }else{
+                barray[dip[i].addrs[j]] = 1;
+            }
+            }
 
-        if(num_inblocks > 0){
-            if (barray[dip[i].addrs[NDIRECT]] != 0) {
-               fprintf(stderr, "ERROR: direct address used more than once.\n");
-                exit(1);
-           }else{
-               barray[dip[i].addrs[NDIRECT]] = 1;
-           }
-        }
+            if(num_inblocks > 0){
+                if (barray[dip[i].addrs[NDIRECT]] != 0) {
+                fprintf(stderr, "ERROR: direct address used more than once.\n");
+                    exit(1);
+            }else{
+                barray[dip[i].addrs[NDIRECT]] = 1;
+            }
+            }
 
 
-        // indirect blocks
-        uint *ind = (uint*)block(dip[i].addrs[NDIRECT]);
-        for (int j = 0; j < num_inblocks; j++) {
-            if (barray[ind[j]] != 0) {
-                fprintf(stderr, "ERROR: indirect address used more than once.\n");
-                exit(1);
-           }else{
-               barray[dip[i].addrs[NDIRECT]] = 2;
-           }
-        }
+            // indirect blocks
+            uint *ind = (uint*)block(dip[i].addrs[NDIRECT]);
+            for (int j = 0; j < num_inblocks; j++) {
+                if (barray[ind[j]] != 0) {
+                    fprintf(stderr, "ERROR: indirect address used more than once.\n");
+                    exit(1);
+            }else{
+                barray[dip[i].addrs[NDIRECT]] = 2;
+            }
+            }
         }
     }
+
+    
 }
 
 void test9() {
