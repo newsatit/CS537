@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (fd < 0) {
-        fprintf(stderr, "image not found.\n", argv[1]);
+        fprintf(stderr, "image not found.\n");
         exit(1);
     }
 
@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
     test2();
     test4();
     test3();
-    test5();
+    //test5();
     test6();
     test78();
     test9();
@@ -305,6 +305,7 @@ void test78() {
     
     //iterate through all inodes
     for(int i=0; i< sb->ninodes; i++){
+        
         if (dip[i].type != 0) {
             int num_all_blocks = ROUNDUP(dip[i].size, BSIZE)/BSIZE;
             int num_dblocks = min(num_all_blocks, NDIRECT);
@@ -312,34 +313,36 @@ void test78() {
                 
             // direct blocks
             for (int j = 0; j < num_dblocks; j++) {
-                if (barray[dip[i].addrs[j]] != 0) {
-                fprintf(stderr, "ERROR: direct address used more than once.\n");
+                if (barray[dip[i].addrs[j] - first_dblock] != 0) {
+                    fprintf(stderr, "ERROR: direct address used more than once.\n");
                     exit(1);
-            }else{
-                barray[dip[i].addrs[j]] = 1;
-            }
+                }else{
+                    barray[dip[i].addrs[j] - first_dblock] = 1;
+                }
             }
 
             if(num_inblocks > 0){
-                if (barray[dip[i].addrs[NDIRECT]] != 0) {
-                fprintf(stderr, "ERROR: direct address used more than once.\n");
+                if (barray[dip[i].addrs[NDIRECT] - first_dblock] != 0) {
+                    fprintf(stderr, "ERROR: direct address used more than once.\n");
                     exit(1);
-            }else{
-                barray[dip[i].addrs[NDIRECT]] = 1;
-            }
+                }else{
+                    barray[dip[i].addrs[NDIRECT] - first_dblock] = 1;
+                }
             }
 
 
             // indirect blocks
             uint *ind = (uint*)block(dip[i].addrs[NDIRECT]);
             for (int j = 0; j < num_inblocks; j++) {
-                if (barray[ind[j]] != 0) {
+                if (barray[ind[j] - first_dblock] != 0) {
                     fprintf(stderr, "ERROR: indirect address used more than once.\n");
                     exit(1);
-            }else{
-                barray[dip[i].addrs[NDIRECT]] = 2;
+                }else{
+                    barray[dip[i].addrs[NDIRECT] - first_dblock] = 2;
+                }
             }
-            }
+
+
         }
     }
 
