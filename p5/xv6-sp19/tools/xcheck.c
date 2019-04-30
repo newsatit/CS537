@@ -36,8 +36,7 @@ void test3();
 void test4();
 void test5();
 void test6();
-void test7();
-void test8();
+void test78();
 void test9();
 void test10();
 void test11();
@@ -54,7 +53,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (fd < 0) {
-        printf("Usage: %s file not found\n", argv[1]);
+        fprintf(stderr, "image not found.\n", argv[1]);
         exit(1);
     }
 
@@ -71,8 +70,7 @@ int main(int argc, char *argv[]) {
     test3();
     test5();
     test6();
-    test7();
-    test8();
+    test78();
     test9();
     test10();
     test11();
@@ -262,6 +260,22 @@ void test5() {
 
             // indirect blocks
             uint *ind = (uint*)block(dip[i].addrs[NDIRECT]);
+            if (num_inblocks > 0) {
+                char* bitblock = (char*)( img_ptr + BBLOCK(dip[i].addrs[NDIRECT],sb->ninodes) * BSIZE );
+                int bit_index = (dip[i].addrs[NDIRECT] - first_dblock) % BPB;
+                int byte_offset = bit_index / 8;
+                int bit_offset = bit_index % 8;
+
+                char b = bitblock[byte_offset];
+
+                // printf("xxxxx block: %x addr: %lx bit: %x\n",dip[i].addrs[NDIRECT], BBLOCK(dip[i].addrs[NDIRECT],sb->ninodes) * BSIZE, b);
+                // printf("byte %d bit %d\n", byte_offset, bit_offset);
+
+                if(!(b & (1 << bit_offset))) {
+                    fprintf(stderr, "ERROR: address used by inode but marked free in bitmap.\n");
+                    exit(1);
+                }
+            }
             for (int j = 0; j < num_inblocks; j++) {
                 char* bitblock = (char*)( img_ptr + BBLOCK(ind[j],sb->ninodes) * BSIZE );
                 int bit_index = (ind[j] - first_dblock) % BPB;
@@ -269,7 +283,7 @@ void test5() {
                 int bit_offset = bit_index % 8;
 
                 char b = bitblock[byte_offset];
-                // printf("block: %x addr: %lx bit: %x\n",ind[j], BBLOCK(ind[j],sb->ninodes) * BSIZE, b);
+                // printf("indirect block: %x addr: %lx bit: %x\n",ind[j], BBLOCK(ind[j],sb->ninodes) * BSIZE, b);
                 // printf("byte %d bit %d\n", byte_offset, bit_offset);
                 if(!(b & (1 << bit_offset))) {
                     fprintf(stderr, "ERROR: address used by inode but marked free in bitmap.\n");
@@ -284,13 +298,55 @@ void test6() {
 
 }
 
-void test7() {
+// For in-use inodes, each direct address in use is only used once. 
+// If not, print ERROR: direct address used more than once.
+// For in-use inodes, each indirect address in use is only used once.
+// If not, print ERROR: indirect address used more than once.
+void test78() {
+    char* barray = calloc(sb->nblocks,sizeof(char));
+    
+    //iterate through all inodes
+    for(int i=0; i< sb->ninodes; i++){
+        if (dip[i].type != 0) {
+        int num_all_blocks = ROUNDUP(dip[i].size, BSIZE)/BSIZE;
+        int num_dblocks = min(num_all_blocks, NDIRECT);
+        int num_inblocks = num_all_blocks - NDIRECT;
+            
+        int first_dblock = BBLOCK((sb->nblocks-1), sb->ninodes) + 1;
+        int last_dblock = first_dblock + sb->nblocks - 1;
+        // direct blocks
+        for (int j = 0; j < num_dblocks; j++) {
+            if (barray[dip[i].addrs[j]] != 0) {
+               fprintf(stderr, "ERROR: direct address used more than once.\n");
+                exit(1);
+           }else{
+               barray[dip[i].addrs[j]] = 1;
+           }
+        }
 
+        if(num_inblocks > 0){
+            if (barray[dip[i].addrs[NDIRECT]] != 0) {
+               fprintf(stderr, "ERROR: direct address used more than once.\n");
+                exit(1);
+           }else{
+               barray[dip[i].addrs[NDIRECT]] = 1;
+           }
+        }
+
+
+        // indirect blocks
+        uint *ind = (uint*)block(dip[i].addrs[NDIRECT]);
+        for (int j = 0; j < num_inblocks; j++) {
+            if (barray[ind[j]] != 0) {
+                fprintf(stderr, "ERROR: indirect address used more than once.\n");
+                exit(1);
+           }else{
+               barray[dip[i].addrs[NDIRECT]] = 2;
+           }
+        }
+        }
+    }
 }
-
-void test8() {
-
-} 
 
 void test9() {
 
