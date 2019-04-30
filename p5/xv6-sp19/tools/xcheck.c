@@ -40,8 +40,7 @@ void test4();
 void test56();
 void test78();
 void test910();
-void test11();
-void test12();
+void test1112();
 
 int main(int argc, char *argv[]) {
     int fd;
@@ -76,8 +75,7 @@ int main(int argc, char *argv[]) {
     test78();
     test56();
     test910();
-    test11();
-    test12();
+    test1112();
 
     free(barray);
 
@@ -107,7 +105,6 @@ For in-use inodes, each address that is used by inode is valid (points to a vali
 If the direct block is used and is invalid, print ERROR: bad direct address in inode.; 
 if the indirect block is in use and is invalid, print ERROR: bad indirect address in inode.
 */
-// TODO: indirect in indirect
 void test2() {
     for (int i = 1; i < sb->ninodes + 1; i++) {
         if (dip[i].type != 0) {
@@ -357,10 +354,51 @@ void test910() {
 
 }
 
-void test11() {
+void test1112() {
+    char* links_count = calloc((sb->ninodes) + 1,sizeof(char));    
+    for(int i = 1; i < sb->ninodes + 1; i++){
+        if(dip[i].type == T_DIR){
+            // print_inode(dip[i]);
+            int num_all_blocks = ROUNDUP(dip[i].size, BSIZE)/BSIZE;
+            int num_dblocks = min(num_all_blocks, NDIRECT);
+            int num_inblocks = num_all_blocks - NDIRECT;
+
+            // direct blocks
+            for (int j = 0; j < num_dblocks; j++) {
+                struct xv6_dirent *entry = (struct xv6_dirent *)(img_ptr + dip[i].addrs[j] * BSIZE);
+                for(int k = 0; k < BSIZE/(int)sizeof(struct xv6_dirent); k++){
+                    if (strcmp(entry[k].name, ".") && strcmp(entry[k].name, ".."))
+                        links_count[entry[k].inum]++;
+                }
+            }
+
+            // indirect blocks
+            uint *ind = (uint*)block(dip[i].addrs[NDIRECT]);
+            for (int j = 0; j < num_inblocks; j++) {
+                struct xv6_dirent *entry = (struct xv6_dirent *)(img_ptr + ind[j] * BSIZE);
+                for(int k = 0; k < BSIZE/ (int)sizeof(struct xv6_dirent); k++){
+                    if (strcmp(entry[k].name, ".") && strcmp(entry[k].name, ".."))
+                        links_count[entry[k].inum]++;
+                }
+            }
+        }
+    }
+
+    for(int i = 1; i < sb->ninodes + 1; i++){
+        // test 11
+        if (dip[i].type == T_FILE) {
+            if (dip[i].nlink != links_count[i]) {
+                fprintf(stderr, "ERROR: bad reference count for file.\n");
+                exit(1);
+            }
+        // test 12
+        } else if (dip[i].type == T_DIR) {
+            if (links_count[i] > 1) {
+                fprintf(stderr, "ERROR: directory appears more than once in file system.\n");
+                exit(1);
+            }
+        }
+   }
 
 }
 
-void test12() {
-
-}
