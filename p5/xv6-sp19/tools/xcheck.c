@@ -31,13 +31,13 @@ struct  superblock *sb;
 struct dinode *dip;
 int first_dblock;
 int last_dblock;
+char* barray;
 
 void test1();
 void test2();
 void test3();
 void test4();
-void test5();
-void test6();
+void test56();
 void test78();
 void test9();
 void test10();
@@ -68,20 +68,24 @@ int main(int argc, char *argv[]) {
     first_dblock = BBLOCK((sb->nblocks-1), sb->ninodes) + 1;
     last_dblock = first_dblock + sb->nblocks - 1;
 
+    barray = calloc(sb->nblocks,sizeof(char));
+
+    // printf("bitmap block is at %lx\n", BBLOCK((first_dblock),sb->ninodes) * BSIZE);
+
     test1();
     test2();
     test4();
     test3();
-    //test5();
-    test6();
     test78();
+    test56();
     test9();
     test10();
     test11();
     test12();
 
-    return 0;
+    free(barray);
 
+    return 0;
 }
 
 void print_inode(struct dinode dip) {
@@ -94,7 +98,7 @@ void print_inode(struct dinode dip) {
 // Each inode is either unallocated or one of the valid types (T_FILE, T_DIR, T_DEV). 
 // If not, print ERROR: bad inode.
 void test1() {
-    for(int i = 0; i < sb->ninodes; i++){
+    for(int i = 1; i < sb->ninodes + 1; i++){
         if(dip[i].type < 0 || dip[i].type > 3){
             fprintf(stderr, "ERROR: bad inode.\n");
             exit(1);
@@ -109,7 +113,7 @@ if the indirect block is in use and is invalid, print ERROR: bad indirect addres
 */
 // TODO: indirect in indirect
 void test2() {
-    for (int i = 0; i < sb->ninodes; i++) {
+    for (int i = 1; i < sb->ninodes + 1; i++) {
         if (dip[i].type != 0) {
             // print_inode(dip[i]);
             int num_all_blocks = ROUNDUP(dip[i].size, BSIZE)/BSIZE;
@@ -170,7 +174,7 @@ Each directory contains . and .. entries, and the . entry points to the director
 If not, print ERROR: directory not properly formatted.
 */
 void test4() {
-    for (int i = 0; i < sb->ninodes; i++) {
+    for (int i = 1; i < sb->ninodes + 1; i++) {
         if (dip[i].type == T_DIR) {
             // has current directory "."
             int cur_dir = 0;
@@ -223,96 +227,29 @@ void test4() {
     }
 }
 
-void test5() {
-    for (int i = 0; i < sb->ninodes; i++) {
-        if (dip[i].type != 0) {
-            // printf("inode: %d\n\t",i);
-            // print_inode(dip[i]);
-            int num_all_blocks = ROUNDUP(dip[i].size, BSIZE)/BSIZE;
-            int num_dblocks = min(num_all_blocks, NDIRECT);
-            int num_inblocks = num_all_blocks - NDIRECT;
-            // printf("size %d\n", dip[i].size);
-            // printf("all %d, num_dblocks %d, inblocks %d\n", num_all_blocks, num_dblocks, num_inblocks);
-            // printf("first block %x\n", dip[i].addrs[0]);
-
-            // direct blocks
-            for (int j = 0; j < num_dblocks; j++) {
-                char* bitblock = (char*)( img_ptr + BBLOCK(dip[i].addrs[j],sb->ninodes) * BSIZE );
-                int bit_index = (dip[i].addrs[j] - first_dblock) % BPB;
-                int byte_offset = bit_index / 8;
-                int bit_offset = bit_index % 8;
-
-                char b = bitblock[byte_offset];
-
-                // printf("block: %x addr: %lx bit: %x\n",dip[i].addrs[j], BBLOCK(dip[i].addrs[j],sb->ninodes) * BSIZE, b);
-                // printf("byte %d bit %d\n", byte_offset, bit_offset);
-
-                if(!(b & (1 << bit_offset))) {
-                    fprintf(stderr, "ERROR: address used by inode but marked free in bitmap.\n");
-                    exit(1);
-                }
-
-                // use BBLOCK(addr,sb->ninodes) to find which bitmap block 
-                // (addr - first_block) % BPB will give us the bit number we should be verifying 
-            }
-
-            // indirect blocks
-            uint *ind = (uint*)block(dip[i].addrs[NDIRECT]);
-            if (num_inblocks > 0) {
-                char* bitblock = (char*)( img_ptr + BBLOCK(dip[i].addrs[NDIRECT],sb->ninodes) * BSIZE );
-                int bit_index = (dip[i].addrs[NDIRECT] - first_dblock) % BPB;
-                int byte_offset = bit_index / 8;
-                int bit_offset = bit_index % 8;
-
-                char b = bitblock[byte_offset];
-
-                // printf("xxxxx block: %x addr: %lx bit: %x\n",dip[i].addrs[NDIRECT], BBLOCK(dip[i].addrs[NDIRECT],sb->ninodes) * BSIZE, b);
-                // printf("byte %d bit %d\n", byte_offset, bit_offset);
-
-                if(!(b & (1 << bit_offset))) {
-                    fprintf(stderr, "ERROR: address used by inode but marked free in bitmap.\n");
-                    exit(1);
-                }
-            }
-            for (int j = 0; j < num_inblocks; j++) {
-                char* bitblock = (char*)( img_ptr + BBLOCK(ind[j],sb->ninodes) * BSIZE );
-                int bit_index = (ind[j] - first_dblock) % BPB;
-                int byte_offset = bit_index / 8;
-                int bit_offset = bit_index % 8;
-
-                char b = bitblock[byte_offset];
-                // printf("indirect block: %x addr: %lx bit: %x\n",ind[j], BBLOCK(ind[j],sb->ninodes) * BSIZE, b);
-                // printf("byte %d bit %d\n", byte_offset, bit_offset);
-                if(!(b & (1 << bit_offset))) {
-                    fprintf(stderr, "ERROR: address used by inode but marked free in bitmap.\n");
-                    exit(1);
-                }
-            }
-        }
-    }
-}
-
-void test6() {
-
-}
-
 // For in-use inodes, each direct address in use is only used once. 
 // If not, print ERROR: direct address used more than once.
 // For in-use inodes, each indirect address in use is only used once.
 // If not, print ERROR: indirect address used more than once.
 void test78() {
-    char* barray = calloc(sb->nblocks,sizeof(char));
     
+    // printf("inodes = %d\n", sb->ninodes);
     //iterate through all inodes
-    for(int i=0; i< sb->ninodes; i++){
-        
+    for(int i = 1; i < sb->ninodes + 1; i++){
+        // printf("inode %d\n", i);
         if (dip[i].type != 0) {
-            int num_all_blocks = ROUNDUP(dip[i].size, BSIZE)/BSIZE;
+            // print_inode(dip[i]);
+            // int num_all_blocks = ROUNDUP(dip[i].size, BSIZE)/BSIZE;
+            int num_all_blocks = dip[i].size/BSIZE;
+            if (dip[i].size % BSIZE > 0) {
+                num_all_blocks++;
+            }
             int num_dblocks = min(num_all_blocks, NDIRECT);
             int num_inblocks = num_all_blocks - NDIRECT;
                 
             // direct blocks
             for (int j = 0; j < num_dblocks; j++) {
+                // printf("direct block %d\n", dip[i].addrs[j] - first_dblock);
                 if (barray[dip[i].addrs[j] - first_dblock] != 0) {
                     fprintf(stderr, "ERROR: direct address used more than once.\n");
                     exit(1);
@@ -322,6 +259,7 @@ void test78() {
             }
 
             if(num_inblocks > 0){
+                // printf("immediate block %d\n", dip[i].addrs[NDIRECT] - first_dblock);
                 if (barray[dip[i].addrs[NDIRECT] - first_dblock] != 0) {
                     fprintf(stderr, "ERROR: direct address used more than once.\n");
                     exit(1);
@@ -334,19 +272,45 @@ void test78() {
             // indirect blocks
             uint *ind = (uint*)block(dip[i].addrs[NDIRECT]);
             for (int j = 0; j < num_inblocks; j++) {
+                // printf("indirect block %d\n", ind[j] - first_dblock);
                 if (barray[ind[j] - first_dblock] != 0) {
                     fprintf(stderr, "ERROR: indirect address used more than once.\n");
                     exit(1);
                 }else{
-                    barray[dip[i].addrs[NDIRECT] - first_dblock] = 2;
+                    barray[ind[j] - first_dblock] = 2;
                 }
             }
 
-
         }
-    }
+    }    
+}
 
-    
+void test56() {
+    for (int j = 0; j < sb->nblocks; j++) {
+        char* bitblock = (char*)( img_ptr + BBLOCK((first_dblock + j),sb->ninodes) * BSIZE);
+        // printf("bitblock %lx\n", BBLOCK((first_dblock + j),sb->ninodes));
+        int bit_index = (first_dblock + j) % BPB;
+        int byte_offset = bit_index / 8;
+        int bit_offset = bit_index % 8;
+
+        char b = bitblock[byte_offset];
+        
+        // check test 5
+        if ((b & (1 << bit_offset)) != 0) {
+            if (barray[j] == 0) {
+                fprintf(stderr, "ERROR: bitmap marks block in use but it is not in use.\n");
+                exit(1);                        
+            }
+        }    
+
+        // check test 6
+        if (barray[j] != 0) {
+            if  ((b & (1 << bit_offset)) == 0){
+                fprintf(stderr, "ERROR: address used by inode but marked free in bitmap.\n");
+                exit(1);                        
+            }
+        }  
+    }
 }
 
 void test9() {
