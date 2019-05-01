@@ -449,11 +449,8 @@ short extra1helper(ushort parent_inum, ushort child_inum){
 }
 
 void extra1(){
-//iterate to all directory inode
-//check ".." to go to its parent
-//find the inode
-short found;
-for(int i = 2; i < sb->ninodes + 1; i++){
+    short found;
+    for(int i = 2; i < sb->ninodes + 1; i++){
         if(dip[i].type == T_DIR){
             int k;
             int num_all_blocks = ROUNDUP(dip[i].size, BSIZE)/BSIZE;
