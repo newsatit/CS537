@@ -42,6 +42,7 @@ void test78();
 void test910();
 void test1112();
 void extra1();
+void extra2();
 
 int main(int argc, char *argv[]) {
     int fd;
@@ -77,6 +78,7 @@ int main(int argc, char *argv[]) {
     test56();
     test910();
     test1112();
+    extra2();
     extra1();
 
     free(barray);
@@ -491,5 +493,69 @@ void extra1(){
             }
             found = 0;
         }
-    }   
+    }  
+
+}
+
+void extra2() {
+    // inode_array[i] - to check whether we have visit inode i
+    char* inode_array = calloc((sb->ninodes) + 1,sizeof(char));    
+    for(int i = 2; i < sb->ninodes + 1; i++){
+        if(dip[i].type == T_DIR){
+            // print_inode(dip[i]);
+            int cur = i;
+            for (int t = 0; t < sb->ninodes + 1; t++) {
+                inode_array[t] = 0;
+            }
+            while (cur != ROOTINO) {
+                // direct blocks
+                int num_all_blocks = ROUNDUP(dip[cur].size, BSIZE)/BSIZE;
+                int num_dblocks = min(num_all_blocks, NDIRECT);
+                int num_inblocks = num_all_blocks - NDIRECT;
+
+                int cur_changed = 0;
+                for (int j = 0; j < num_dblocks; j++) {
+                    struct xv6_dirent *entry = (struct xv6_dirent *)(img_ptr + dip[cur].addrs[j] * BSIZE);
+                    for(int k = 0; k < BSIZE/(int)sizeof(struct xv6_dirent); k++){
+                        if (!strcmp(entry[k].name, "..")) {
+                            // there is a loop
+                            if (inode_array[entry[k].inum]) {
+                                fprintf(stderr, "ERROR: inaccessible directory exists.\n");
+                                exit(1);
+                            // traverse to parent
+                            } else {
+                                inode_array[entry[k].inum] = 1;
+                                cur = entry[k].inum;
+                                cur_changed = 1;
+                                break;
+                            }
+                        }
+                    }
+                    if (cur_changed) break;
+                }
+
+                if (cur_changed) continue;
+
+                // indirect blocks
+                uint *ind = (uint*)block(dip[cur].addrs[NDIRECT]);
+                for (int j = 0; j < num_inblocks; j++) {
+                    struct xv6_dirent *entry = (struct xv6_dirent *)(img_ptr + ind[j] * BSIZE);
+                    for(int k = 0; k < BSIZE/(int)sizeof(struct xv6_dirent); k++){
+                        if (!strcmp(entry[k].name, "..")) {
+                            if (inode_array[entry[k].inum]) {
+                                fprintf(stderr, "ERROR: inaccessible directory exists.\n");
+                                exit(1);
+                            } else {
+                                inode_array[entry[k].inum] = 1;
+                                cur = entry[k].inum;
+                                cur_changed = 1;
+                                break;
+                            }
+                        }
+                    }
+                    if (cur_changed) break;
+                }                
+            }
+        }
+    }
 }
