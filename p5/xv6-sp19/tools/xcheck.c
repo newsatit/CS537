@@ -41,6 +41,7 @@ void test56();
 void test78();
 void test910();
 void test1112();
+void extra1();
 
 int main(int argc, char *argv[]) {
     int fd;
@@ -136,7 +137,6 @@ void test2() {
 
 // Root directory exists, its inode number is 1, and the parent of the root directory is itself.
 // If not, print ERROR: root directory does not exist.
-// TODO: Fix
 void test3() {
     int num_all_blocks = ROUNDUP(dip[1].size, BSIZE)/BSIZE;
     int num_dblocks = min(num_all_blocks, NDIRECT);
@@ -412,3 +412,76 @@ void test1112() {
 
 }
 
+short extra1helper(ushort parent_inum, ushort child_inum){
+    short found = 0;
+    int num_all_blocks = ROUNDUP(dip[parent_inum].size, BSIZE)/BSIZE;
+    int num_dblocks = min(num_all_blocks, NDIRECT);
+    int num_inblocks = num_all_blocks - NDIRECT;
+    int k;
+    // direct blocks
+    for (int j = 0; j < num_dblocks; j++) {
+        struct xv6_dirent *entry = (struct xv6_dirent *)(img_ptr + dip[parent_inum].addrs[j] * BSIZE);
+        k = 0;
+        while(k < BSIZE/(int)sizeof(struct xv6_dirent) && found != 1){
+            if (entry[k].inum == child_inum){
+                found = 1;
+            }
+            k++;
+        }
+    }
+    // indirect blocks
+    uint *ind = (uint*)block(dip[parent_inum].addrs[NDIRECT]);
+    for (int j = 0; j < num_inblocks; j++) {
+        struct xv6_dirent *entry = (struct xv6_dirent *)(img_ptr + ind[j] * BSIZE);
+        k = 0;
+        while(k < BSIZE/ (int)sizeof(struct xv6_dirent) && found != 1){
+            if (entry[k].inum == child_inum){
+                found = 1;
+            }
+            k++;
+        }
+    }
+    if(found != 1){
+        fprintf(stderr, "ERROR: parent directory mismatch.\n");
+        exit(1);
+    }
+    return 1;
+}
+
+void extra1(){
+//iterate to all directory inode
+//check ".." to go to its parent
+//find the inode
+short found;
+for(int i = 2; i < sb->ninodes + 1; i++){
+        if(dip[i].type == T_DIR){
+            int k;
+            int num_all_blocks = ROUNDUP(dip[i].size, BSIZE)/BSIZE;
+            int num_dblocks = min(num_all_blocks, NDIRECT);
+            int num_inblocks = num_all_blocks - NDIRECT;
+            // direct blocks
+            for (int j = 0; j < num_dblocks; j++) {
+                struct xv6_dirent *entry = (struct xv6_dirent *)(img_ptr + dip[i].addrs[j] * BSIZE);
+                k = 0;
+                while(k < BSIZE/(int)sizeof(struct xv6_dirent) && found != 1){
+                    if (!strcmp(entry[k].name, "..")){
+                        found = extra1helper(entry[k].inum, k);
+                    }
+                    k++;
+                }
+            }
+            // indirect blocks
+            uint *ind = (uint*)block(dip[i].addrs[NDIRECT]);
+            for (int j = 0; j < num_inblocks; j++) {
+                struct xv6_dirent *entry = (struct xv6_dirent *)(img_ptr + ind[j] * BSIZE);
+                k = 0;
+                while(k < BSIZE/(int)sizeof(struct xv6_dirent) && found != 1){
+                    if (!strcmp(entry[k].name, "..")){
+                        found = extra1helper(entry[k].inum, k);
+                    }
+                    k++;
+                }
+            }
+        }
+    }   
+}
