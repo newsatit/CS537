@@ -77,6 +77,7 @@ int main(int argc, char *argv[]) {
     test56();
     test910();
     test1112();
+    extra1();
 
     free(barray);
 
@@ -413,6 +414,7 @@ void test1112() {
 }
 
 short extra1helper(ushort parent_inum, ushort child_inum){
+    // printf("extra1helper is called\n");
     short found = 0;
     int num_all_blocks = ROUNDUP(dip[parent_inum].size, BSIZE)/BSIZE;
     int num_dblocks = min(num_all_blocks, NDIRECT);
@@ -423,7 +425,8 @@ short extra1helper(ushort parent_inum, ushort child_inum){
         struct xv6_dirent *entry = (struct xv6_dirent *)(img_ptr + dip[parent_inum].addrs[j] * BSIZE);
         k = 0;
         while(k < BSIZE/(int)sizeof(struct xv6_dirent) && found != 1){
-            if (entry[k].inum == child_inum){
+            if ((strcmp(entry[k].name, ".") && strcmp(entry[k].name, "..")) && entry[k].inum == child_inum){
+            // if (entry[k].inum == child_inum){
                 found = 1;
             }
             k++;
@@ -435,7 +438,8 @@ short extra1helper(ushort parent_inum, ushort child_inum){
         struct xv6_dirent *entry = (struct xv6_dirent *)(img_ptr + ind[j] * BSIZE);
         k = 0;
         while(k < BSIZE/ (int)sizeof(struct xv6_dirent) && found != 1){
-            if (entry[k].inum == child_inum){
+            if ((strcmp(entry[k].name, ".") && strcmp(entry[k].name, "..")) && entry[k].inum == child_inum){
+            // if (entry[k].inum == child_inum){
                 found = 1;
             }
             k++;
@@ -449,7 +453,7 @@ short extra1helper(ushort parent_inum, ushort child_inum){
 }
 
 void extra1(){
-    short found;
+    short found = 0;
     for(int i = 2; i < sb->ninodes + 1; i++){
         if(dip[i].type == T_DIR){
             int k;
@@ -462,7 +466,7 @@ void extra1(){
                 k = 0;
                 while(k < BSIZE/(int)sizeof(struct xv6_dirent) && found != 1){
                     if (!strcmp(entry[k].name, "..")){
-                        found = extra1helper(entry[k].inum, k);
+                        found = extra1helper(entry[k].inum, i);
                     }
                     k++;
                 }
@@ -474,7 +478,7 @@ void extra1(){
                 k = 0;
                 while(k < BSIZE/(int)sizeof(struct xv6_dirent) && found != 1){
                     if (!strcmp(entry[k].name, "..")){
-                        found = extra1helper(entry[k].inum, k);
+                        found = extra1helper(entry[k].inum, i);
                     }
                     k++;
                 }
