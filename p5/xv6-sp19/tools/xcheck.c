@@ -425,9 +425,11 @@ short extra1helper(ushort parent_inum, ushort child_inum){
         struct xv6_dirent *entry = (struct xv6_dirent *)(img_ptr + dip[parent_inum].addrs[j] * BSIZE);
         k = 0;
         while(k < BSIZE/(int)sizeof(struct xv6_dirent) && found != 1){
+            // printf("%s\t%d\n",entry[k].name,entry[k].inum);
             if ((strcmp(entry[k].name, ".") && strcmp(entry[k].name, "..")) && entry[k].inum == child_inum){
             // if (entry[k].inum == child_inum){
                 found = 1;
+                // printf("directory found parent: %d child: %d\n",parent_inum,child_inum);
             }
             k++;
         }
@@ -438,9 +440,11 @@ short extra1helper(ushort parent_inum, ushort child_inum){
         struct xv6_dirent *entry = (struct xv6_dirent *)(img_ptr + ind[j] * BSIZE);
         k = 0;
         while(k < BSIZE/ (int)sizeof(struct xv6_dirent) && found != 1){
+            // printf("%s\t%d\n",entry[k].name,entry[k].inum);
             if ((strcmp(entry[k].name, ".") && strcmp(entry[k].name, "..")) && entry[k].inum == child_inum){
             // if (entry[k].inum == child_inum){
                 found = 1;
+                // printf("directory found parent: %d child: %d\n",parent_inum,child_inum);
             }
             k++;
         }
@@ -466,6 +470,7 @@ void extra1(){
                 k = 0;
                 while(k < BSIZE/(int)sizeof(struct xv6_dirent) && found != 1){
                     if (!strcmp(entry[k].name, "..")){
+                        // printf("parent found\n");
                         found = extra1helper(entry[k].inum, i);
                     }
                     k++;
@@ -478,11 +483,13 @@ void extra1(){
                 k = 0;
                 while(k < BSIZE/(int)sizeof(struct xv6_dirent) && found != 1){
                     if (!strcmp(entry[k].name, "..")){
+                        // printf("parent found\n");
                         found = extra1helper(entry[k].inum, i);
                     }
                     k++;
                 }
             }
+            found = 0;
         }
     }   
 }
